@@ -44,6 +44,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web.DynamicData" />
@@ -55,6 +58,24 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.7.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.Mvc.5.2.7\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.Razor.3.2.7\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.AspNet.WebPages.3.2.7\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
@@ -69,9 +90,31 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\images\bg.jpg" />
+    <Content Include="css\images\header.jpg" />
+    <Content Include="css\images\intro.jpg" />
+    <Content Include="css\images\pic.jpg" />
+    <Content Include="css\SiteLAF.css" />
+    <Content Include="css\style.css" />
     <Content Include="SolCaseService.asmx" />
     <Content Include="SolCaseServicesWebForm.aspx" />
+    <Content Include="templated-projection\assets\css\font-awesome.min.css" />
+    <Content Include="templated-projection\assets\css\main.css" />
+    <Content Include="templated-projection\assets\fonts\fontawesome-webfont.svg" />
+    <Content Include="templated-projection\assets\js\jquery.min.js" />
+    <Content Include="templated-projection\assets\js\main.js" />
+    <Content Include="templated-projection\assets\js\skel.min.js" />
+    <Content Include="templated-projection\assets\js\util.js" />
+    <Content Include="templated-projection\CREDITS.txt" />
+    <Content Include="templated-projection\elements.html" />
+    <Content Include="templated-projection\generic.html" />
+    <Content Include="templated-projection\images\banner.jpg" />
+    <Content Include="templated-projection\images\pic01.jpg" />
+    <Content Include="templated-projection\images\pic02.jpg" />
+    <Content Include="templated-projection\index.html" />
+    <Content Include="templated-projection\LICENSE.txt" />
     <Content Include="Web.config" />
+    <Content Include="xsl\CopyAll.xslt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SolCaseService.asmx.cs">
@@ -88,9 +131,15 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\46.psd" />
     <None Include="packages.config" />
     <Content Include="Properties\DataSources\System.Xml.Linq.XElement.datasource" />
     <None Include="Properties\PublishProfiles\PublishToUtilityApps.pubxml" />
+    <Content Include="templated-projection\assets\fonts\fontawesome-webfont.eot" />
+    <Content Include="templated-projection\assets\fonts\fontawesome-webfont.ttf" />
+    <Content Include="templated-projection\assets\fonts\fontawesome-webfont.woff" />
+    <Content Include="templated-projection\assets\fonts\fontawesome-webfont.woff2" />
+    <Content Include="templated-projection\assets\fonts\FontAwesome.otf" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -1,0 +1,24 @@
+﻿.Grid
+{
+    border: solid 1px #FFFFFF;
+}
+
+.Grid td {
+    border: solid 1px #FFFFFF;
+    margin: 1px 1px 1px 1px;
+    padding: 1px 1px 1px 1px;
+    text-align: center;
+}
+
+.GridHeader {
+    font-weight: bold;
+    background-color: #8b8dbb;
+}
+
+.GridItem {
+    background-color: #e6e6e6;
+}
+
+.GridAltItem {
+    background-color: white;
+}

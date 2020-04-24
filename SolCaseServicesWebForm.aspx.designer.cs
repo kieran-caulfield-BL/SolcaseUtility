@@ -15,6 +15,15 @@ namespace SolcaseUtility
     {
 
         /// <summary>
+        /// Head1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlHead Head1;
+
+        /// <summary>
         /// SolCaseServices control.
         /// </summary>
         /// <remarks>
@@ -22,6 +31,15 @@ namespace SolcaseUtility
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlForm SolCaseServices;
+
+        /// <summary>
+        /// txtBoxClientId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBoxClientId;
 
         /// <summary>
         /// Button1 control.
@@ -33,12 +51,21 @@ namespace SolcaseUtility
         protected global::System.Web.UI.WebControls.Button Button1;
 
         /// <summary>
-        /// TextBox1 control.
+        /// GridViewClientDocs control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TextBox1;
+        protected global::System.Web.UI.WebControls.GridView GridViewClientDocs;
+
+        /// <summary>
+        /// div_xml control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_xml;
     }
 }
