@@ -88,15 +88,8 @@ namespace SolcaseUtility
             Globals.solcaseDocs = new DataSet();
             Globals.solcaseDocs.ReadXml(xmlReader);
 
-            // populate the tree view
-
-            foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
-            {
-                TreeNode matterNode = new TreeNode(row["MT-CODE"].ToString());
-
-                TreeViewMatterList.Nodes.Add(matterNode);
-
-            }
+            // populate the client name
+            div_clientName.InnerText = Globals.solcaseDocs.Tables["Client"].Rows[0]["CL-NAME"].ToString();
 
             // create an additional column for the dataset
             // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
@@ -110,61 +103,23 @@ namespace SolcaseUtility
                 row["PROPOSED-FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
             }
 
-            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION", "PROPOSED-FILE-NAME" };
-
-            DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
-
-            //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
-            GridViewClientDocs.DataSource = displayedColumns;
-            GridViewClientDocs.DataBind();
-
             xmlReader.Close();
 
-            /*div_xml.InnerHtml = "<div class='table-wrapper'><Table class='fl-table'>";
+            // populate the tree view
+            TreeViewMatterList.Nodes.Clear();
 
-            XmlReader xmlReader2 = new XmlNodeReader(xmlDoc);
-
-            while (xmlReader2.Read())
+            foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
             {
-                xmlReader2.MoveToElement();
+                TreeNode matterNode = new TreeNode(row["MT-CODE"].ToString());
 
-                if (xmlReader2.Name == "SolDoc")
-                {
+                TreeViewMatterList.Nodes.Add(matterNode);
 
-                    div_xml.InnerHtml = div_xml.InnerHtml + "<tbody><tr><td>" + xmlReader2.Name + "</td>";
-
-                    while (xmlReader2.MoveToNextAttribute())
-                    {
-                        div_xml.InnerHtml = div_xml.InnerHtml + "<td> " + xmlReader2.Name + " " + xmlReader2.Value + "</td>";
-                    }
-
-                    div_xml.InnerHtml = div_xml.InnerHtml + "</tr></tbody>";
-                }
             }
 
-            div_xml.InnerHtml = div_xml.InnerHtml + "</Table></div>";
+            // clear the grid view
+            GridViewClientDocs.DataSource = null;
+            GridViewClientDocs.DataBind();
 
-            xmlReader2.Close();*/
-
-            // export the xml doc to a file (this is the important bit to interface with SDMU
-
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
-
-            System.IO.MemoryStream stream = new System.IO.MemoryStream();
-            XmlTextWriter writer = new XmlTextWriter(stream, System.Text.Encoding.UTF8);
-
-            xmlDoc.WriteTo(writer);
-            writer.Flush();
-            //Response.Clear();
-            //byte[] byteArray = stream.ToArray();
-            //Response.AddHeader("Content-Disposition", "attachment;filename=ClientDocs.xml");
-            //Response.AppendHeader("Content-Length", byteArray.Length.ToString());
-            //Response.ContentType = "application/xml";
-            //Response.BinaryWrite(byteArray);
-            //Response.WriteFile("ClientDocs.xml");
-            //Response.End();
-            writer.Close();
         }
 
         protected void GridViewClientDocs_SelectedIndexChanged(object sender, EventArgs e)
@@ -180,8 +135,17 @@ namespace SolcaseUtility
         protected void TreeViewMatterList_SelectedNodeChanged(object sender, EventArgs e)
         {
             SelectedMatter = TreeViewMatterList.SelectedNode.Text;
+            SelectedMatterIndex = TreeViewMatterList.Nodes.IndexOf(TreeViewMatterList.SelectedNode);
+            
+            div_matterDesc.InnerText = Globals.solcaseDocs.Tables["Matter"].Rows[SelectedMatterIndex]["MAT-DESCRIPTION"].ToString();
 
-            div_matterDesc.InnerText = SelectedMatter;
+            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION", "PROPOSED-FILE-NAME" };
+
+            DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
+
+            //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
+            GridViewClientDocs.DataSource = displayedColumns;
+            GridViewClientDocs.DataBind();
         }
 
     }

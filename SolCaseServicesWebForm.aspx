@@ -9,7 +9,7 @@
 </head>
 <body>
     <form id="SolCaseServices" runat="server">
-        <div class="w3-container">
+        <div style="font-family:Arial, Helvetica, sans-serif" class="w3-container">
             <div class="w3-panel w3-metro-light-green"><h2>Server S-BL-KC01 Solcase Utilities Page.</h2></div>
 
             <asp:TextBox ID="txtBoxClientId" runat="server" ToolTip="Entere a valid Client Id (6 Digits)"></asp:TextBox>
@@ -18,8 +18,8 @@
             <br />
             <div id="div_xml" runat="server"></div>
             <br />
-            <div id="div_clientName" runat="server"></div><br />
-            <div id="div_matterDesc" runat="server"></div>
+            <div id="div_clientName" class="w3-metro-light-blue" runat="server"></div>
+            <div id="div_matterDesc" class="w3-metro-light-blue" runat="server"></div>
         </div>
         <div>
             <table><tr><td>
