@@ -16,6 +16,8 @@ namespace SolcaseUtility
 {
     public partial class SolCaseServicesWebForm : System.Web.UI.Page
     {
+        public string SelectedMatter { get; private set; }
+        public int SelectedMatterIndex { get; private set; }
 
         public static class Globals
         {
@@ -47,8 +49,9 @@ namespace SolcaseUtility
                     }
                 }
 
-                // replace ".pdf.pdf"
+                // replace ".pdf.pdf" and set ampersand to "and"
                 builder.Replace(".pdf.pdf", ".pdf");
+                builder.Replace("&amp;", "and");
 
                 return builder.ToString();
             }
@@ -85,6 +88,16 @@ namespace SolcaseUtility
             Globals.solcaseDocs = new DataSet();
             Globals.solcaseDocs.ReadXml(xmlReader);
 
+            // populate the tree view
+
+            foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
+            {
+                TreeNode matterNode = new TreeNode(row["MT-CODE"].ToString());
+
+                TreeViewMatterList.Nodes.Add(matterNode);
+
+            }
+
             // create an additional column for the dataset
             // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
             if (!Globals.solcaseDocs.Tables["SolDoc"].Columns.Contains("PROPOSED-FILE-NAME"))
@@ -97,16 +110,17 @@ namespace SolcaseUtility
                 row["PROPOSED-FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
             }
 
-            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION","PROPOSED-FILE-NAME"};
+            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION", "PROPOSED-FILE-NAME" };
 
-            //DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
+            DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
 
-            GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
+            //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
+            GridViewClientDocs.DataSource = displayedColumns;
             GridViewClientDocs.DataBind();
 
             xmlReader.Close();
 
-            div_xml.InnerHtml = "<div class='table-wrapper'><Table class='fl-table'>";
+            /*div_xml.InnerHtml = "<div class='table-wrapper'><Table class='fl-table'>";
 
             XmlReader xmlReader2 = new XmlNodeReader(xmlDoc);
 
@@ -130,7 +144,7 @@ namespace SolcaseUtility
 
             div_xml.InnerHtml = div_xml.InnerHtml + "</Table></div>";
 
-            xmlReader2.Close();
+            xmlReader2.Close();*/
 
             // export the xml doc to a file (this is the important bit to interface with SDMU
 
@@ -151,6 +165,23 @@ namespace SolcaseUtility
             //Response.WriteFile("ClientDocs.xml");
             //Response.End();
             writer.Close();
+        }
+
+        protected void GridViewClientDocs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void GridViewClientDocs_OnSort(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void TreeViewMatterList_SelectedNodeChanged(object sender, EventArgs e)
+        {
+            SelectedMatter = TreeViewMatterList.SelectedNode.Text;
+
+            div_matterDesc.InnerText = SelectedMatter;
         }
 
     }

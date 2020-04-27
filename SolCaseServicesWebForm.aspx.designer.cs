@@ -60,6 +60,33 @@ namespace SolcaseUtility
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_xml;
 
         /// <summary>
+        /// div_clientName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_clientName;
+
+        /// <summary>
+        /// div_matterDesc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_matterDesc;
+
+        /// <summary>
+        /// TreeViewMatterList control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TreeView TreeViewMatterList;
+
+        /// <summary>
         /// GridViewClientDocs control.
         /// </summary>
         /// <remarks>
