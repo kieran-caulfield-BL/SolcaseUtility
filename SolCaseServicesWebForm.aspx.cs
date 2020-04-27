@@ -8,6 +8,7 @@ using System.Web.UI.WebControls;
 using System.Xml;
 using System.Xml.Xsl;
 using System.Data;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 
@@ -15,6 +16,45 @@ namespace SolcaseUtility
 {
     public partial class SolCaseServicesWebForm : System.Web.UI.Page
     {
+
+        public static class Globals
+        {
+            public static DataSet solcaseDocs { get; set; }
+
+            static Globals()
+            {
+                // initialize MyData property in the constructor with static methods
+                solcaseDocs = new DataSet();
+            }
+        }
+
+        public static class FileNameCorrector
+        {
+            private static HashSet<char> invalid = new HashSet<char>(Path.GetInvalidFileNameChars());
+
+            public static string ToValidFileName(string name, char replacement = '\0')
+            {
+                var builder = new StringBuilder();
+                foreach (var cur in name)
+                {
+                    if (cur > 31 && cur < 128 && !invalid.Contains(cur))
+                    {
+                        builder.Append(cur);
+                    }
+                    else if (replacement != '\0')
+                    {
+                        builder.Append(replacement);
+                    }
+                }
+
+                // replace ".pdf.pdf"
+                builder.Replace(".pdf.pdf", ".pdf");
+
+                return builder.ToString();
+            }
+        }
+
+
         protected void Page_Load(object sender, EventArgs e)
         {
 
@@ -24,6 +64,8 @@ namespace SolcaseUtility
 
         protected void Button1_Click(object sender, EventArgs e)
         {
+
+            Response.Clear();
 
             Regex rgxClient = new Regex(@"[0-9]{6}");
 
@@ -40,35 +82,31 @@ namespace SolcaseUtility
             XmlDocument xmlDoc = xmlReturn.OwnerDocument;
             XmlReader xmlReader = new XmlNodeReader(xmlDoc);
 
-            // export the xml doc
+            Globals.solcaseDocs = new DataSet();
+            Globals.solcaseDocs.ReadXml(xmlReader);
 
-            XmlWriterSettings settings = new XmlWriterSettings();
-            settings.Indent = true;
+            // create an additional column for the dataset
+            // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
+            if (!Globals.solcaseDocs.Tables["SolDoc"].Columns.Contains("PROPOSED-FILE-NAME"))
+            {
+                Globals.solcaseDocs.Tables["SolDoc"].Columns.Add("PROPOSED-FILE-NAME", typeof(String));
+            }
+            // Now populate the new column
+            foreach (DataRow row in Globals.solcaseDocs.Tables["SolDoc"].Rows)
+            {
+                row["PROPOSED-FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
+            }
 
-            System.IO.MemoryStream stream = new System.IO.MemoryStream();
-            XmlTextWriter writer = new XmlTextWriter(stream, System.Text.Encoding.UTF8);
+            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION","PROPOSED-FILE-NAME"};
 
-            xmlDoc.WriteTo(writer);
-            writer.Flush();
-            Response.Clear();
-            byte[] byteArray = stream.ToArray();
-            Response.AddHeader("Content-Disposition", "attachment;filename=ClientDocs.xml");
-            Response.AppendHeader("Content-Length", byteArray.Length.ToString());
-            Response.ContentType = "application/xml";
-            Response.BinaryWrite(byteArray);
-            //Response.WriteFile("ClientDocs.xml");
-            //Response.End();
-            writer.Close();
+            //DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
 
-            DataSet ds = new DataSet();
-            ds.ReadXml(xmlReader);
-
-            GridViewClientDocs.DataSource = ds;
+            GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
             GridViewClientDocs.DataBind();
 
             xmlReader.Close();
 
-            div_xml.InnerHtml = "<Table>";
+            div_xml.InnerHtml = "<div class='table-wrapper'><Table class='fl-table'>";
 
             XmlReader xmlReader2 = new XmlNodeReader(xmlDoc);
 
@@ -79,20 +117,40 @@ namespace SolcaseUtility
                 if (xmlReader2.Name == "SolDoc")
                 {
 
-                    div_xml.InnerHtml = div_xml.InnerHtml + "<tr><td>" + xmlReader2.Name + "</td>";
+                    div_xml.InnerHtml = div_xml.InnerHtml + "<tbody><tr><td>" + xmlReader2.Name + "</td>";
 
                     while (xmlReader2.MoveToNextAttribute())
                     {
                         div_xml.InnerHtml = div_xml.InnerHtml + "<td> " + xmlReader2.Name + " " + xmlReader2.Value + "</td>";
                     }
 
-                    div_xml.InnerHtml = div_xml.InnerHtml + "</tr>";
+                    div_xml.InnerHtml = div_xml.InnerHtml + "</tr></tbody>";
                 }
             }
 
-            div_xml.InnerHtml = div_xml.InnerHtml + "</Table>";
+            div_xml.InnerHtml = div_xml.InnerHtml + "</Table></div>";
 
             xmlReader2.Close();
+
+            // export the xml doc to a file (this is the important bit to interface with SDMU
+
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+
+            System.IO.MemoryStream stream = new System.IO.MemoryStream();
+            XmlTextWriter writer = new XmlTextWriter(stream, System.Text.Encoding.UTF8);
+
+            xmlDoc.WriteTo(writer);
+            writer.Flush();
+            //Response.Clear();
+            //byte[] byteArray = stream.ToArray();
+            //Response.AddHeader("Content-Disposition", "attachment;filename=ClientDocs.xml");
+            //Response.AppendHeader("Content-Length", byteArray.Length.ToString());
+            //Response.ContentType = "application/xml";
+            //Response.BinaryWrite(byteArray);
+            //Response.WriteFile("ClientDocs.xml");
+            //Response.End();
+            writer.Close();
         }
 
     }

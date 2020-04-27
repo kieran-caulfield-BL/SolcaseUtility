@@ -51,15 +51,6 @@ namespace SolcaseUtility
         protected global::System.Web.UI.WebControls.Button Button1;
 
         /// <summary>
-        /// GridViewClientDocs control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView GridViewClientDocs;
-
-        /// <summary>
         /// div_xml control.
         /// </summary>
         /// <remarks>
@@ -67,5 +58,14 @@ namespace SolcaseUtility
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_xml;
+
+        /// <summary>
+        /// GridViewClientDocs control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.GridView GridViewClientDocs;
     }
 }

@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
     <title>Server S-BL-KC01 Solcase Utilities Page.</title>
-    <!--<link href="css/style.css" rel="stylesheet" type="text/css" />-->
+    <link href="css/SiteLAF.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
     <form id="SolCaseServices" runat="server">
@@ -18,18 +18,14 @@
             <br />
             <br />
         </div>
-        
-        <p>
-            &nbsp;</p>
-        
-        <asp:GridView ID="GridViewClientDocs" runat="server">
-        </asp:GridView>
-        
+       
         <br />
         <div id="div_xml" runat="server"></div>
-        
+                
+        <asp:GridView ID="GridViewClientDocs" runat="server" CssClass="mygrdContent" PagerStyle-CssClass="pager" HeaderStyle-CssClass="header" RowStyle-CssClass="rows" 
+            AllowPaging="False" AllowSorting="True">
+        </asp:GridView>
+                
     </form>
-    <p>
-        &nbsp;</p>
-</body>
+    </body>
 </html>
