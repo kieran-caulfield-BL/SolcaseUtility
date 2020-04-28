@@ -129,6 +129,7 @@
     <Content Include="css\images\intro.jpg" />
     <Content Include="css\images\pic.jpg" />
     <Content Include="css\SiteLAF.css" />
+    <Content Include="images\BL-NameAndIcon.jpg" />
     <Content Include="SolCaseService.asmx" />
     <Content Include="SolCaseServicesWebForm.aspx" />
     <Content Include="Web.config" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\46.psd" />
+    <Content Include="App_Themes\globalTheme\Buttons.skin" />
     <None Include="packages.config" />
     <Content Include="Properties\DataSources\System.Xml.Linq.XElement.datasource" />
     <None Include="Properties\PublishProfiles\PublishToUtilityApps.pubxml" />
@@ -163,6 +165,7 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

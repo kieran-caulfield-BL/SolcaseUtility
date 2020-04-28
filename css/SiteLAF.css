@@ -1,4 +1,13 @@
-﻿/* metro colours*/
+﻿// create space between objects
+.divider {
+    width: 5px;
+    height: auto;
+    display: inline-block;
+}
+.Button {
+    margin: 5px;
+}
+/* metro colours*/
 .w3-metro-light-green {
     color: #fff;
     background-color: #99b433

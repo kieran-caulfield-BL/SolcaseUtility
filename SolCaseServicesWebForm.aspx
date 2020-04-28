@@ -10,14 +10,15 @@
 <body>
     <form id="SolCaseServices" runat="server">
         <div style="font-family:Arial, Helvetica, sans-serif" class="w3-container">
-            <div class="w3-panel w3-metro-light-green"><h2>Server S-BL-KC01 Solcase Utilities Page.</h2></div>
-
-            <asp:TextBox ID="txtBoxClientId" runat="server" ToolTip="Entere a valid Client Id (6 Digits)"></asp:TextBox>
-            <asp:Button CssClass="Button" ID="Button1" runat="server" Text="Get Client Docs" OnClick="Button1_Click" Width="105px" Height="20px" />
-
-            <br />
-            <div id="div_xml" runat="server"></div>
-            <br />
+            <div class="w3-panel w3-metro-light-green">
+                <h2>Solcase Client Documents Viewer.</h2>
+                <asp:Image ID="Image2" runat="server" Height="23px" ImageAlign="Right" ImageUrl="~/images/BL-NameAndIcon.jpg" />
+                <asp:TextBox ID="txtBoxClientId" runat="server" ToolTip="Entere a valid Client Id (6 Digits)"></asp:TextBox>
+                <asp:Button CssClass="Button" ID="Button1" runat="server" Text="Get Client Docs" OnClick="Button1_Click" Width="129px" Height="20px" />
+                <asp:Button CssClass="Button" ID="Button2" runat="server" Text="Download" OnClick="Button2_Click" Width="105px" Height="20px" />
+            </div>
+            <hr />
+            <div id="div_xml" class="w3-metro-orange" runat="server"></div>
             <div id="div_clientName" class="w3-metro-light-blue" runat="server"></div>
             <div id="div_matterDesc" class="w3-metro-light-blue" runat="server"></div>
         </div>

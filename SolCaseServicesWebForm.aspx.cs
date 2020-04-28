@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -22,6 +23,8 @@ namespace SolcaseUtility
         public static class Globals
         {
             public static DataSet solcaseDocs { get; set; }
+
+            public static XmlDocument xmlDoc { get; set; }
 
             static Globals()
             {
@@ -82,8 +85,9 @@ namespace SolcaseUtility
             SolCaseService testWebService = new SolCaseService();
             XmlElement xmlReturn = testWebService.getClientDocs(txtBoxClientId.Text);
 
-            XmlDocument xmlDoc = xmlReturn.OwnerDocument;
-            XmlReader xmlReader = new XmlNodeReader(xmlDoc);
+            Globals.xmlDoc = new XmlDocument();
+            Globals.xmlDoc = xmlReturn.OwnerDocument;
+            XmlReader xmlReader = new XmlNodeReader(Globals.xmlDoc);
 
             Globals.solcaseDocs = new DataSet();
             Globals.solcaseDocs.ReadXml(xmlReader);
@@ -122,7 +126,39 @@ namespace SolcaseUtility
 
         }
 
-        protected void GridViewClientDocs_SelectedIndexChanged(object sender, EventArgs e)
+
+        protected void Button2_Click(object sender, EventArgs e)
+        {
+            // Download the whole page as an xml file to the browser
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+
+            System.IO.MemoryStream stream = new System.IO.MemoryStream();
+            XmlTextWriter writer = new XmlTextWriter(stream, System.Text.Encoding.UTF8);
+
+            Globals.xmlDoc.WriteTo(writer);
+            writer.Flush();
+
+            // create the filename and write to the browser
+            DateTime today = DateTime.Today;
+            string fileName = txtBoxClientId.Text + today.ToString("dd-MM-yyyy") +".xml";
+
+            Response.Clear();
+            byte[] byteArray = stream.ToArray();
+            Response.AddHeader("Content-Disposition", "attachment;filename="+fileName);
+            Response.ContentEncoding = System.Text.Encoding.UTF8;
+            Response.CacheControl = "No-cache";
+            Response.AppendHeader("Content-Length", byteArray.Length.ToString());
+            Response.ContentType = "application/xml";
+            Response.BinaryWrite(byteArray);
+            //Response.WriteFile(fileName);
+            Response.Flush();
+            Response.SuppressContent = true;
+            Response.End();
+
+            writer.Close();
+        }
+            protected void GridViewClientDocs_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
@@ -146,6 +182,75 @@ namespace SolcaseUtility
             //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
             GridViewClientDocs.DataSource = displayedColumns;
             GridViewClientDocs.DataBind();
+        }
+
+    }
+
+    public static class Copier
+    {
+        public static async Task<string> CopyFiles(Dictionary<string, string> files, Action<double> progressCallback)
+        {
+            long total_size = files.Keys.Select(x => new FileInfo(x).Length).Sum();
+
+            long total_read = 0;
+
+            double progress_size = 1000.0;
+
+            string progressText = "";
+
+            foreach (var item in files)
+            {
+                long total_read_for_file = 0;
+
+                var from = item.Key;
+                var to = item.Value;
+
+                progressText = progressText + "Copy " + from.ToString() + " to " + to.ToString() + Environment.NewLine;
+
+                using (var outStream = new FileStream(to, FileMode.Create, FileAccess.Write, FileShare.Read))
+                {
+                    using (var inStream = new FileStream(from, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        try
+                        {
+                            await CopyStream(inStream, outStream, x =>
+                            {
+                                total_read_for_file = x;
+                                progressCallback(((total_read + total_read_for_file) / (double)total_size) * progress_size);
+                            });
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+
+                    }
+                }
+
+                total_read += total_read_for_file;
+
+            }
+            return progressText;
+        }
+
+        public static async Task CopyStream(Stream from, Stream to, Action<long> progress)
+        {
+            int buffer_size = 10240;
+
+            byte[] buffer = new byte[buffer_size];
+
+            long total_read = 0;
+
+            while (total_read < from.Length)
+            {
+                int read = await from.ReadAsync(buffer, 0, buffer_size);
+
+                await to.WriteAsync(buffer, 0, read);
+
+                total_read += read;
+
+                progress(total_read);
+            }
         }
 
     }
