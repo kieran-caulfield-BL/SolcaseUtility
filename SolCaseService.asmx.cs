@@ -12,22 +12,13 @@ using System.Configuration;
 namespace SolcaseUtility
 {
     /// <summary>
-    /// Summary description for HelloWorld
+    /// Webservices to call Solcase and SOS databases
     /// </summary>
-    [WebService(Namespace = "http://tempuri.org/")]
+    [WebService(Namespace = "http://birkettlong.co.uk/")]
     [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
     [System.ComponentModel.ToolboxItem(false)]
     // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
     [System.Web.Script.Services.ScriptService]
-    /*public class HelloWorld : System.Web.Services.WebService
-    {
-
-        [WebMethod]
-        public string SaySomething()
-        {
-            return "Hello World";
-        }
-    }*/
 
     public class SolCaseService : System.Web.Services.WebService
     {
@@ -228,5 +219,135 @@ order by
                 return xmlDocError.DocumentElement;
             }
         }
+    
+        [WebMethod]
+        public XmlElement getOpenMatterList(string matterTypeInput)
+        {
+            String inputMatterCode = matterTypeInput;
+
+            Regex rgxClient = new Regex(@"[A-Z,0-9]{4}");
+
+            if (!rgxClient.IsMatch(inputMatterCode))
+            {
+                XmlDocument xmlDocError = new XmlDocument();
+                XmlNode rootNode = xmlDocError.CreateElement("SolcaseDocs");
+                xmlDocError.AppendChild(rootNode);
+                XmlNode errorNode = xmlDocError.CreateElement("WebServiceError");
+                errorNode.InnerText = "Mattyer Type must be a 4 digit number";
+                rootNode.AppendChild(errorNode);
+                return xmlDocError.DocumentElement;
+            }
+
+            string sql = @"Select
+    A.MATDB.""MT-TYPE"" As ""MT-TYPE"",
+    A.MATDB.""DATE-CLOSED"" As ""DATE-CLOSED"",
+    A.MATDB.ENTITYTYPE As ENTITYTYPE,
+    A.MATDB.BRANCH As BRANCH,
+    A.MATDB.""MT-CODE"" As ""MT-CODE"",
+    A.MATDB.""CL-CODE"" As ""CL-CODE"",
+    A.MATDB.DESCRIPTION As DESCRIPTION,
+    A.MATDB.""FEE-EARNER"" As ""FEE-EARNER"",
+    A.MATDB.""DATE-OPENED"" As ""DATE-OPENED"",
+    A.MATDB.""ST-CODE"" As ""ST-CODE"",
+    PUB.FEETR.""NAME"",
+    PUB.FEETR.DEPARTMENT
+From
+    A.MATDB Inner Join
+    PUB.FEETR On PUB.FEETR.""FEE-EARNER"" = A.MATDB.""FEE-EARNER""
+Where
+    A.MATDB.""MT-TYPE"" = ? And
+    A.MATDB.""DATE-CLOSED"" Is Null
+With(NOLOCK)";
+
+            OdbcConnection conn = null;
+            OdbcDataReader reader = null;
+
+            try
+            {
+                // open connection
+                conn = new OdbcConnection(ConfigurationManager.ConnectionStrings["SOSLivex64"].ToString());
+                conn.Open();
+                // execute the SQL
+                OdbcCommand cmd = new OdbcCommand(sql, conn);
+                cmd.Parameters.Add("MatterType", OdbcType.VarChar).Value = inputMatterCode; // "example V3PR"
+                reader = cmd.ExecuteReader();
+
+                //Console.WriteLine("Database = {0} \nDriver = {1} \nQuery {2}\nConnection String = {3}\nServer Version = {4}\nDataSource = {5}",
+                //conn.Database, conn.Driver, cmd.CommandText, conn.ConnectionString, conn.ServerVersion, conn.DataSource);
+
+                XmlDocument xmlDoc = new XmlDocument();
+
+                XmlNode rootNode = xmlDoc.CreateElement("SOSOpenMatters");
+                xmlDoc.AppendChild(rootNode);
+
+                while (reader.Read())
+                {
+
+                    XmlNode matterNode = xmlDoc.CreateElement("Matter");
+                    XmlAttribute matterCode = xmlDoc.CreateAttribute("MT-CODE");
+                    XmlAttribute matterType = xmlDoc.CreateAttribute("MT-TYPE");
+                    XmlAttribute matterDesc = xmlDoc.CreateAttribute("DESCRIPTION");
+
+                    // the matter code has changed on each new record so create a new Matter Node                       
+                    matterCode.Value = reader["MT-CODE"].ToString();
+                    matterNode.Attributes.Append(matterCode);
+
+                    matterType.Value = reader["MT-TYPE"].ToString();
+                    matterNode.Attributes.Append(matterType);
+
+                    matterDesc.Value = reader["DESCRIPTION"].ToString();
+                    matterNode.Attributes.Append(matterDesc);
+
+                    rootNode.AppendChild(matterNode);
+
+                    XmlNode sosMatterNode = xmlDoc.CreateElement("SOSMatterDetails");
+                    XmlAttribute branch = xmlDoc.CreateAttribute("BRANCH");
+                    XmlAttribute clCode = xmlDoc.CreateAttribute("CL-CODE");
+                    XmlAttribute feeEarner = xmlDoc.CreateAttribute("FEE-EARNER");
+                    XmlAttribute dateOpened = xmlDoc.CreateAttribute("DATE-OPENED");
+                    XmlAttribute stCode = xmlDoc.CreateAttribute("ST-CODE");
+                    XmlAttribute feName = xmlDoc.CreateAttribute("NAME");
+                    XmlAttribute feDept = xmlDoc.CreateAttribute("DEPARTMENT");
+
+                    // assign values from result set reader
+                    branch.Value = reader["BRANCH"].ToString();
+                    clCode.Value = reader["CL-CODE"].ToString();
+                    feeEarner.Value = reader["FEE-EARNER"].ToString();
+                    dateOpened.Value = reader["DATE-OPENED"].ToString();
+                    stCode.Value = reader["ST-CODE"].ToString();
+                    feName.Value = reader["NAME"].ToString();
+                    feDept.Value = reader["DEPARTMENT"].ToString();
+
+                    // assign attributes to soldocNode
+                    sosMatterNode.Attributes.Append(branch);
+                    sosMatterNode.Attributes.Append(clCode);
+                    sosMatterNode.Attributes.Append(feeEarner);
+                    sosMatterNode.Attributes.Append(dateOpened);
+                    sosMatterNode.Attributes.Append(stCode);
+                    sosMatterNode.Attributes.Append(feName);
+                    sosMatterNode.Attributes.Append(feDept);
+
+                    // append node to matter
+                    matterNode.AppendChild(sosMatterNode);
+                }
+
+                reader.Close();
+                conn.Close();
+
+                return xmlDoc.DocumentElement;
+            }
+            catch (Exception e)
+            {
+                XmlDocument xmlDocError = new XmlDocument();
+                XmlNode rootNode = xmlDocError.CreateElement("SOSOpenMatters");
+                xmlDocError.AppendChild(rootNode);
+                XmlNode errorNode = xmlDocError.CreateElement("WebServiceError");
+                errorNode.InnerText = e.Message.ToString();
+                rootNode.AppendChild(errorNode);
+                return xmlDocError.DocumentElement;
+            }
+
+        }
+    
     }
 }
