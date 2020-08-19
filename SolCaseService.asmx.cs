@@ -211,7 +211,7 @@ order by
             catch (Exception e)
             {
                 XmlDocument xmlDocError = new XmlDocument();
-                XmlNode rootNode = xmlDocError.CreateElement("SolcaseDocs");
+                XmlNode rootNode = xmlDocError.CreateElement("SOSOpenMatters");
                 xmlDocError.AppendChild(rootNode);
                 XmlNode errorNode = xmlDocError.CreateElement("WebServiceError");
                 errorNode.InnerText = e.Message.ToString();
@@ -348,6 +348,142 @@ With(NOLOCK)";
             }
 
         }
-    
+
+        [WebMethod]
+        public XmlElement getV3PRListUDScreens(string matterCodeInput)
+        {
+            String inputMatterCode = matterCodeInput;
+
+            Regex rgxClient = new Regex(@"[A-Z,0-9]{6}-[A-Z,0-9]{6}");
+
+            if (!rgxClient.IsMatch(inputMatterCode))
+            {
+                XmlDocument xmlDocError = new XmlDocument();
+                XmlNode rootNode = xmlDocError.CreateElement("SolcaseScreens");
+                xmlDocError.AppendChild(rootNode);
+                XmlNode errorNode = xmlDocError.CreateElement("WebServiceError");
+                errorNode.InnerText = "Matter Code must be a 6 digit number, hyphen then 6 digit number";
+                rootNode.AppendChild(errorNode);
+                return xmlDocError.DocumentElement;
+            }
+
+            string sql = @"Select
+    X.""DATE-OPENED"",
+    X.""LEVEL-FEE-EARNER"",
+    X.""MT-CODE"",
+    X.""CL-CODE"",
+    X.DESCRIPTION,
+    X.""MT-TYPE"",
+    PUB.UDDETAIL.""UD-FIELD"" As ""UD-FIELD"",
+    PUB.UDDETAIL.""GROUP-NO"" As ""GROUP-NO"",
+    PUB.UDDETAIL.""UDS-TYPE"" As ""UDS-TYPE"",
+    PUB.UDDETAIL.""MT-TYPE"" As ""UDS-MTTYPE"",
+    PUB.UDSCREEN.DESCRIPTION As ""SCREEN-NAME"",
+    PUB.UDSCREEN.""FIELD-DESC"" As ""FIELD-DESC"",
+    PUB.UDSCREEN.""ENTRY-ORDER"" As ""FIELD-ORDER""
+From
+    PUB.MATDB X,
+    PUB.UDDETAIL,
+    PUB.UDSCREEN
+Where
+    PUB.UDDETAIL.""OWNER-CODE"" = X.""MT-CODE"" And
+    PUB.UDSCREEN.""UDS-TYPE"" = PUB.UDDETAIL.""UDS-TYPE"" And
+    PUB.UDSCREEN.""MT-TYPE"" = X.""MT-TYPE"" And
+    X.""MT-CODE"" = ? And
+    PUB.UDDETAIL.""UDS-TYPE"" in (Select PUB.UDSCREEN.""UDS-TYPE"" from PUB.UDSCREEN where PUB.UDSCREEN.""MT-TYPE"" = X.""MT-TYPE"")
+Order By
+  X.""MT-CODE"", PUB.UDDETAIL.""UDS-TYPE"", PUB.UDDETAIL.""GROUP-NO"" Asc
+WITH(NOLOCK)";
+
+            OdbcConnection conn = null;
+            OdbcDataReader reader = null;
+
+            try
+            {
+                // open connection
+                conn = new OdbcConnection(ConfigurationManager.ConnectionStrings["SolCaseLivex64"].ToString());
+                conn.Open();
+                // execute the SQL
+                OdbcCommand cmd = new OdbcCommand(sql, conn);
+                cmd.Parameters.Add("MatterCode", OdbcType.VarChar).Value = inputMatterCode; // "example V3PR"
+                reader = cmd.ExecuteReader();
+
+                XmlDocument xmlDoc = new XmlDocument();
+
+                XmlNode rootNode = xmlDoc.CreateElement("SolcaseUDScreens");
+                xmlDoc.AppendChild(rootNode);
+
+                XmlNode matterNode = xmlDoc.CreateElement("Matter");
+                XmlAttribute matterCode = xmlDoc.CreateAttribute("MT-CODE");
+                XmlAttribute matterType = xmlDoc.CreateAttribute("MT-TYPE");
+                XmlAttribute matterDesc = xmlDoc.CreateAttribute("DESCRIPTION");
+
+                Boolean matterNodeNotCreated = true;
+
+                while (reader.Read())
+                {
+                    if (matterNodeNotCreated)
+                    {
+                        // only once used, turn off once processed                                               
+                        matterCode.Value = reader["MT-CODE"].ToString();
+                        matterNode.Attributes.Append(matterCode);
+
+                        matterType.Value = reader["MT-TYPE"].ToString();
+                        matterNode.Attributes.Append(matterType);
+
+                        matterDesc.Value = reader["DESCRIPTION"].ToString();
+                        matterNode.Attributes.Append(matterDesc);
+
+                        rootNode.AppendChild(matterNode);
+
+                        matterNodeNotCreated = false;
+                    }
+
+                    XmlNode udScreensNode = xmlDoc.CreateElement("UDScreenDetails");
+                    XmlAttribute UDSfield = xmlDoc.CreateAttribute("UD-FIELD");
+                    XmlAttribute GroupNo = xmlDoc.CreateAttribute("GROUP-NO");
+                    XmlAttribute UDSType = xmlDoc.CreateAttribute("UDS-TYPE");
+                    XmlAttribute ScreenName = xmlDoc.CreateAttribute("SCREEN-NAME");
+                    XmlAttribute fieldDesc = xmlDoc.CreateAttribute("FIELD-DESC");
+                    XmlAttribute fieldOrder = xmlDoc.CreateAttribute("FIELD-ORDER");
+
+                    // assign values from result set reader
+                    UDSfield.Value = reader["UD-FIELD"].ToString();
+                    GroupNo.Value = reader["GROUP-NO"].ToString();
+                    UDSType.Value = reader["UDS-TYPE"].ToString();
+                    ScreenName.Value = reader["SCREEN-NAME"].ToString();
+                    fieldDesc.Value = reader["FIELD-DESC"].ToString(); 
+                    fieldOrder.Value = reader["FIELD-ORDER"].ToString();
+
+                    // assign attributes to soldocNode
+                    udScreensNode.Attributes.Append(UDSType);
+                    udScreensNode.Attributes.Append(GroupNo);
+                    udScreensNode.Attributes.Append(ScreenName);
+                    udScreensNode.Attributes.Append(UDSfield);
+                    udScreensNode.Attributes.Append(fieldDesc);
+                    udScreensNode.Attributes.Append(fieldOrder);
+
+                    // append node to matter
+                    matterNode.AppendChild(udScreensNode);
+                }
+
+                reader.Close();
+                conn.Close();
+
+                return xmlDoc.DocumentElement;
+            }
+            catch (Exception e)
+            {
+                XmlDocument xmlDocError = new XmlDocument();
+                XmlNode rootNode = xmlDocError.CreateElement("SolcaseUDScreens");
+                xmlDocError.AppendChild(rootNode);
+                XmlNode errorNode = xmlDocError.CreateElement("WebServiceError");
+                errorNode.InnerText = e.Message.ToString();
+                rootNode.AppendChild(errorNode);
+                return xmlDocError.DocumentElement;
+            }
+
+        }
+
     }
 }

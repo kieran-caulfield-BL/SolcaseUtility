@@ -12,122 +12,104 @@ using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
+using System.Windows.Controls;
 
 namespace SolcaseUtility
 {
     public partial class SolCaseServicesUDScreens : System.Web.UI.Page
     {
-        public string SelectedMatter { get; private set; }
-        public int SelectedMatterIndex { get; private set; }
+        public string SelectedUDS { get; private set; }
+        public int SelectedUDSIndex { get; private set; }
 
-        public static class Globals
+        public static class UDSGlobals
         {
-            public static DataSet solcaseDocs { get; set; }
+            public static DataSet solcaseScreens { get; set; }
 
             public static XmlDocument xmlDoc { get; set; }
 
-            static Globals()
+            static UDSGlobals()
             {
                 // initialize MyData property in the constructor with static methods
-                solcaseDocs = new DataSet();
+                solcaseScreens = new DataSet();
             }
         }
 
-        public static class FileNameCorrector
-        {
-            private static HashSet<char> invalid = new HashSet<char>(Path.GetInvalidFileNameChars());
-
-            public static string ToValidFileName(string name, char replacement = '\0')
-            {
-                var builder = new StringBuilder();
-                foreach (var cur in name)
-                {
-                    if (cur > 31 && cur < 128 && !invalid.Contains(cur))
-                    {
-                        builder.Append(cur);
-                    }
-                    else if (replacement != '\0')
-                    {
-                        builder.Append(replacement);
-                    }
-                }
-
-                // replace ".pdf.pdf" and set ampersand to "and"
-                builder.Replace(".pdf.pdf", ".pdf");
-                builder.Replace("&amp;", "and");
-
-                return builder.ToString();
-            }
-        }
-
-
-        protected void Page_Load(object sender, EventArgs e)
+       
+        protected void UDS_Page_Load(object sender, EventArgs e)
         {
 
             // create data grid headers, the data grid is 1000 width
 
         }
 
-        protected void Button1_Click(object sender, EventArgs e)
+        protected void Button11_Click(object sender, EventArgs e)
         {
 
             Response.Clear();
 
-            Regex rgxClient = new Regex(@"[0-9]{6}");
+            Regex rgxClient = new Regex(@"[0-9]{6}-[0-9]{6}");
 
-            if (!rgxClient.IsMatch(txtBoxClientId.Text))
+            if (!rgxClient.IsMatch(txtBoxMatterId.Text))
             {
 
-                div_xml.InnerText = "Please enter a Code Code in format 6 numbers with a leading '0' if needed.";
+                div_xml.InnerText = "Please enter a Matter Id in format 6 x 6 numbers numbers with a leading '0' if needed.";
                 return;
             }
 
-            SolCaseService testWebService = new SolCaseService();
-            XmlElement xmlReturn = testWebService.getClientDocs(txtBoxClientId.Text);
+            SolcaseUtility.SolCaseService testWebService = new SolcaseUtility.SolCaseService();
+            XmlElement xmlReturn = testWebService.getV3PRListUDScreens(txtBoxMatterId.Text);
 
             Globals.xmlDoc = new XmlDocument();
             Globals.xmlDoc = xmlReturn.OwnerDocument;
             XmlReader xmlReader = new XmlNodeReader(Globals.xmlDoc);
 
-            Globals.solcaseDocs = new DataSet();
-            Globals.solcaseDocs.ReadXml(xmlReader);
+            UDSGlobals.solcaseScreens = new DataSet();
+            UDSGlobals.solcaseScreens.ReadXml(xmlReader);
 
             // populate the client name
-            div_clientName.InnerText = Globals.solcaseDocs.Tables["Client"].Rows[0]["CL-NAME"].ToString();
+            //div_clientName.InnerText = Globals.solcaseScreens.Tables["Client"].Rows[0]["CL-NAME"].ToString();
 
-            // create an additional column for the dataset
-            // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
-            if (!Globals.solcaseDocs.Tables["SolDoc"].Columns.Contains("PROPOSED-FILE-NAME"))
-            {
-                Globals.solcaseDocs.Tables["SolDoc"].Columns.Add("PROPOSED-FILE-NAME", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["SolDoc"].Rows)
-            {
-                row["PROPOSED-FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
-            }
+            // update the xml dom for each node FIELD-DESC, change the ";" to a CR Or Environment.Newline
 
             xmlReader.Close();
 
-            // populate the tree view
-            TreeViewMatterList.Nodes.Clear();
+            // populate the grid view
+            //div_matterDesc2.InnerText = UDSGlobals.solcaseScreens.Tables["Matter"].Rows[0]["DESCRIPTION"].ToString();
 
-            foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
+            string[] selectedColumns = new[] { "UDS-TYPE", "GROUP-NO", "SCREEN-NAME", "FIELD-DESC", "UD-FIELD" };
+
+            DataTable displayedColumns = new DataView(UDSGlobals.solcaseScreens.Tables["UDScreenDetails"]).ToTable(false, selectedColumns);
+
+            // add line throws to grid
+            foreach (DataRow drOutput in displayedColumns.Rows)
             {
-                TreeNode matterNode = new TreeNode(row["MT-CODE"].ToString());
-
-                TreeViewMatterList.Nodes.Add(matterNode);
-
+                drOutput["FIELD-DESC"] = drOutput["FIELD-DESC"].ToString().Replace(";", @"<br>");
+                drOutput["UD-FIELD"] = drOutput["UD-FIELD"].ToString().Replace(";", @"<br>");
             }
 
-            // clear the grid view
-            GridViewClientDocs.DataSource = null;
-            GridViewClientDocs.DataBind();
+             //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
+            GridViewUDScreens.DataSource = displayedColumns;
+            
+            GridViewUDScreens.DataBind();
 
         }
 
 
-        protected void Button2_Click(object sender, EventArgs e)
+        protected void GridViewUDScreens_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+            //disable HTML encoding in all rows and columns
+
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                foreach (TableCell ObjTC in e.Row.Cells)
+                {
+                    string decodedText = HttpUtility.HtmlDecode(ObjTC.Text);
+                    ObjTC.Text = decodedText;
+                }
+            }
+        }
+
+        protected void Button12_Click(object sender, EventArgs e)
         {
             // Download the whole page as an xml file to the browser
             XmlWriterSettings settings = new XmlWriterSettings();
@@ -141,7 +123,7 @@ namespace SolcaseUtility
 
             // create the filename and write to the browser
             DateTime today = DateTime.Today;
-            string fileName = txtBoxClientId.Text + today.ToString("dd-MM-yyyy") +".xml";
+            string fileName = txtBoxMatterId.Text + today.ToString("dd-MM-yyyy") +".xml";
 
             Response.Clear();
             byte[] byteArray = stream.ToArray();
@@ -158,35 +140,21 @@ namespace SolcaseUtility
 
             writer.Close();
         }
-            protected void GridViewClientDocs_SelectedIndexChanged(object sender, EventArgs e)
+
+
+        protected void GridViewUDScreens_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
-        protected void GridViewClientDocs_OnSort(object sender, EventArgs e)
+        protected void GridViewUDScreens_OnSort(object sender, EventArgs e)
         {
 
-        }
-
-        protected void TreeViewMatterList_SelectedNodeChanged(object sender, EventArgs e)
-        {
-            SelectedMatter = TreeViewMatterList.SelectedNode.Text;
-            SelectedMatterIndex = TreeViewMatterList.Nodes.IndexOf(TreeViewMatterList.SelectedNode);
-            
-            div_matterDesc.InnerText = Globals.solcaseDocs.Tables["Matter"].Rows[SelectedMatterIndex]["MAT-DESCRIPTION"].ToString();
-
-            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION", "PROPOSED-FILE-NAME" };
-
-            DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
-
-            //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
-            GridViewClientDocs.DataSource = displayedColumns;
-            GridViewClientDocs.DataBind();
         }
 
     }
 
-    public static class Copier
+    public static class UDSCopier
     {
         public static async Task<string> CopyFiles(Dictionary<string, string> files, Action<double> progressCallback)
         {

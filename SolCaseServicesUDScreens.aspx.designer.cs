@@ -15,102 +15,84 @@ namespace SolcaseUtility
     {
 
         /// <summary>
-        /// Head1 control.
+        /// Head12 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlHead Head1;
+        protected global::System.Web.UI.HtmlControls.HtmlHead Head12;
 
         /// <summary>
-        /// SolCaseServices control.
+        /// SolCaseUDScreens control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm SolCaseServices;
+        protected global::System.Web.UI.HtmlControls.HtmlForm SolCaseUDScreens;
 
         /// <summary>
-        /// Image2 control.
+        /// Image3 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Image Image2;
+        protected global::System.Web.UI.WebControls.Image Image3;
 
         /// <summary>
-        /// txtBoxClientId control.
+        /// txtBoxMatterId control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtBoxClientId;
+        protected global::System.Web.UI.WebControls.TextBox txtBoxMatterId;
 
         /// <summary>
-        /// Button1 control.
+        /// Button11 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button1;
+        protected global::System.Web.UI.WebControls.Button Button11;
 
         /// <summary>
-        /// Button2 control.
+        /// Button12 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button Button2;
+        protected global::System.Web.UI.WebControls.Button Button12;
 
         /// <summary>
-        /// div_xml control.
+        /// div_xml2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_xml;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_xml2;
 
         /// <summary>
-        /// div_clientName control.
+        /// div_matterDesc2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_clientName;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_matterDesc2;
 
         /// <summary>
-        /// div_matterDesc control.
+        /// GridViewUDScreens control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlGenericControl div_matterDesc;
-
-        /// <summary>
-        /// TreeViewMatterList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TreeView TreeViewMatterList;
-
-        /// <summary>
-        /// GridViewClientDocs control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView GridViewClientDocs;
+        protected global::System.Web.UI.WebControls.GridView GridViewUDScreens;
     }
 }
