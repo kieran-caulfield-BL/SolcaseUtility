@@ -13,6 +13,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
 using System.Windows.Controls;
+using System.Windows.Documents;
+using TableCell = System.Web.UI.WebControls.TableCell;
 
 namespace SolcaseUtility
 {
@@ -74,23 +76,33 @@ namespace SolcaseUtility
             xmlReader.Close();
 
             // populate the grid view
-            //div_matterDesc2.InnerText = UDSGlobals.solcaseScreens.Tables["Matter"].Rows[0]["DESCRIPTION"].ToString();
+        
 
             string[] selectedColumns = new[] { "UDS-TYPE", "GROUP-NO", "SCREEN-NAME", "FIELD-DESC", "UD-FIELD" };
 
-            DataTable displayedColumns = new DataView(UDSGlobals.solcaseScreens.Tables["UDScreenDetails"]).ToTable(false, selectedColumns);
-
-            // add line throws to grid
-            foreach (DataRow drOutput in displayedColumns.Rows)
+            try
             {
-                drOutput["FIELD-DESC"] = drOutput["FIELD-DESC"].ToString().Replace(";", @"<br>");
-                drOutput["UD-FIELD"] = drOutput["UD-FIELD"].ToString().Replace(";", @"<br>");
-            }
+                div_matterDesc2.InnerHtml = "<bold>" + UDSGlobals.solcaseScreens.Tables["Matter"].Rows[0]["DESCRIPTION"].ToString() + "</Bold>";
 
-             //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
-            GridViewUDScreens.DataSource = displayedColumns;
-            
-            GridViewUDScreens.DataBind();
+                DataTable displayedColumns = new DataView(UDSGlobals.solcaseScreens.Tables["UDScreenDetails"]).ToTable(false, selectedColumns);
+
+                // add line throws to grid
+                foreach (DataRow drOutput in displayedColumns.Rows)
+                {
+                    drOutput["FIELD-DESC"] = drOutput["FIELD-DESC"].ToString().Replace(";", @"<br>");
+                    drOutput["UD-FIELD"] = drOutput["UD-FIELD"].ToString().Replace(";", @"<br>");
+                }
+
+                //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
+                GridViewUDScreens.DataSource = displayedColumns;
+
+                GridViewUDScreens.DataBind();
+            }
+            catch (Exception ex)
+            {
+                div_matterDesc2.InnerHtml = "<bold>No User Defined Screens found for matter " + txtBoxMatterId.Text + "</bold>";
+
+            }
 
         }
 
