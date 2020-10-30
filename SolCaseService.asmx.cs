@@ -144,6 +144,9 @@ order by
                         matterDesc.Value = reader["MAT-DESCRIPTION"].ToString();
                         matterNode.Attributes.Append(matterDesc);
                         clientNode.AppendChild(matterNode);
+
+                        // reset the current matter to the latest, ready for next change, when that happens
+                        currentMatterCode = reader["MT-CODE"].ToString();
                     }
 
                     XmlNode soldocNode = xmlDoc.CreateElement("SolDoc");
