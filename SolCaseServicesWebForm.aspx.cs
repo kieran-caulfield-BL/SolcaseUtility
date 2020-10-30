@@ -93,7 +93,13 @@ namespace SolcaseUtility
             Globals.solcaseDocs.ReadXml(xmlReader);
 
             // populate the client name
-            div_clientName.InnerText = Globals.solcaseDocs.Tables["Client"].Rows[0]["CL-NAME"].ToString();
+            try
+            {
+                div_clientName.InnerText = Globals.solcaseDocs.Tables["Client"].Rows[0]["CL-NAME"].ToString();
+            } catch
+            {
+                div_clientName.InnerText = "";
+            }
 
             // create an additional column for the dataset
             // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
@@ -175,12 +181,17 @@ namespace SolcaseUtility
             
             div_matterDesc.InnerText = Globals.solcaseDocs.Tables["Matter"].Rows[SelectedMatterIndex]["MAT-DESCRIPTION"].ToString();
 
-            string[] selectedColumns = new[] { "HISTORY-NO", "HST-DESCRIPTION", "PROPOSED-FILE-NAME" };
+            div_clientName.InnerText = string.Format("[MT-CODE] = '{0}'", SelectedMatter);
+
+            string[] selectedColumns = new[] {"MT-CODE", "HISTORY-NO", "HST-DESCRIPTION", "PROPOSED-FILE-NAME" };
 
             DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["SolDoc"]).ToTable(false, selectedColumns);
+            DataView dataView = displayedColumns.DefaultView;
+            dataView.RowFilter = string.Format("[MT-CODE] = '{0}'", SelectedMatter);
+       
 
             //GridViewClientDocs.DataSource = Globals.solcaseDocs.Tables["SolDoc"];
-            GridViewClientDocs.DataSource = displayedColumns;
+            GridViewClientDocs.DataSource = dataView;
             GridViewClientDocs.DataBind();
         }
 
