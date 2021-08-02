@@ -116,7 +116,6 @@ order by
                 XmlAttribute matterCode = xmlDoc.CreateAttribute("MT-CODE");
                 XmlAttribute matterDesc = xmlDoc.CreateAttribute("MAT-DESCRIPTION");
 
-
                 Boolean clientNodeNotCreated = true;
                 String currentMatterCode = ""; // on change of matter we need to create another matter node
 
@@ -135,8 +134,13 @@ order by
                     }
 
 
+
                     if (currentMatterCode != reader["MT-CODE"].ToString())
                     {
+                        matterNode = xmlDoc.CreateElement("Matter");
+                        matterCode = xmlDoc.CreateAttribute("MT-CODE");
+                        matterDesc = xmlDoc.CreateAttribute("MAT-DESCRIPTION");
+
                         // the matter code has changed, create a new Matter Node                       
                         matterCode.Value = reader["MT-CODE"].ToString();
                         matterNode.Attributes.Append(matterCode);
@@ -144,9 +148,13 @@ order by
                         matterDesc.Value = reader["MAT-DESCRIPTION"].ToString();
                         matterNode.Attributes.Append(matterDesc);
                         clientNode.AppendChild(matterNode);
+
+                        // reset the current matter to the latest, ready for next change, when that happens
+                        currentMatterCode = reader["MT-CODE"].ToString();
                     }
 
                     XmlNode soldocNode = xmlDoc.CreateElement("SolDoc");
+                    XmlAttribute mtCode = xmlDoc.CreateAttribute("MT-CODE");
                     XmlAttribute histDesc = xmlDoc.CreateAttribute("HST-DESCRIPTION");
                     XmlAttribute histNo = xmlDoc.CreateAttribute("HISTORY-NO");
                     XmlAttribute docName = xmlDoc.CreateAttribute("DOCUMENT-NAME");
@@ -164,6 +172,7 @@ order by
                     XmlAttribute fileLocType = xmlDoc.CreateAttribute("LOC-TYPE");
 
                     // assign values from result set reader
+                    mtCode.Value = reader["MT-CODE"].ToString();
                     histNo.Value = reader["HISTORY-NO"].ToString();
                     histDesc.Value = reader["HST-DESCRIPTION"].ToString().Replace("&", "&amp;");
                     docName.Value = reader["DOCUMENT-NAME"].ToString();
@@ -183,6 +192,7 @@ order by
                     fileLocType.Value = reader["LOC-TYPE"].ToString();
 
                     // assign attributes to soldocNode
+                    soldocNode.Attributes.Append(mtCode);
                     soldocNode.Attributes.Append(histNo);
                     soldocNode.Attributes.Append(histDesc);
                     soldocNode.Attributes.Append(docName);
