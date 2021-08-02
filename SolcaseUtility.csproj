@@ -132,6 +132,7 @@
     <Content Include="css\SiteLAF.css" />
     <Content Include="images\BL-NameAndIcon.jpg" />
     <Content Include="SolCaseService.asmx" />
+    <Content Include="SolCaseServicesNetDocumentsImport.aspx" />
     <Content Include="SolCaseServicesUDScreens.aspx" />
     <Content Include="SolCaseServicesWebForm.aspx" />
     <Content Include="Web.config" />
@@ -143,6 +144,13 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SolCaseServicesNetDocumentsImport.aspx.cs">
+      <DependentUpon>SolCaseServicesNetDocumentsImport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="SolCaseServicesNetDocumentsImport.aspx.designer.cs">
+      <DependentUpon>SolCaseServicesNetDocumentsImport.aspx</DependentUpon>
+    </Compile>
     <Compile Include="SolCaseServicesUDScreens.aspx.cs">
       <DependentUpon>SolCaseServicesUDScreens.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -163,6 +171,7 @@
     <Content Include="App_Themes\globalTheme\Buttons.skin" />
     <None Include="packages.config" />
     <Content Include="Properties\DataSources\System.Xml.Linq.XElement.datasource" />
+    <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <None Include="Properties\PublishProfiles\PublishToUtilityApps.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
