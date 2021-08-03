@@ -292,8 +292,7 @@ From
 Where
     PUB.MATDB.""MT-CODE"" = ?
 order by 
-    PUB.""HISTORY-DOCS"".""DATE-CREATED"" ASC,
-    PUB.HISTORY.DESCRIPTION
+    PUB.HISTORY.DESCRIPTION, PUB.""HISTORY-DOCS"".""DOCUMENT-NO"" asc
 ";
             OdbcConnection conn = null;
             OdbcDataReader reader = null;
@@ -380,13 +379,18 @@ order by
 
                     // assign values from result set reader
                     histNo.Value = reader["HISTORY-NO"].ToString();
-                    histDesc.Value = reader["HST-DESCRIPTION"].ToString().Replace("&", "&amp;");
+                    // watch out for commas
+                    histDesc.Value = reader["HST-DESCRIPTION"].ToString().Replace(" & ", " &amp; ").Replace(","," ");
                     docName.Value = reader["HST-DOCUMENT-NAME"].ToString();
                     solcaseDocType.Value = reader["HST-DOCUMENT-TYPE"].ToString();
                     dateInserted.Value = reader["HST-DATE-INSERTED"].ToString();
                     histFE.Value = reader["LEVEL-FEE-EARNER"].ToString();
 
-                    hdDocNo.Value = reader["HD-DOCUMENT-NO"].ToString();
+                    // you need to add 1 to the doc no as Net Docs import Version starts at 1
+                    var ndVersion = 0;
+                    ndVersion = Convert.ToInt32(reader["HD-DOCUMENT-NO"]);
+                    ndVersion = ndVersion + 1;
+                    hdDocNo.Value = ndVersion.ToString();
                     hdOrigDocName.Value = reader["HD-ORIG-DOC-NAME"].ToString();
                     hdDocName.Value = reader["HD-DOCUMENT-NAME"].ToString();
                     hdAuthor.Value = reader["HD-AUTHOR"].ToString();

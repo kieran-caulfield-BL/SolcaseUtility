@@ -82,6 +82,22 @@ namespace SolcaseUtility
                 return;
             }
 
+            Regex rgxClientnD = new Regex(@"^[0-9]{1,10}$");
+
+            if (!rgxClientnD.IsMatch(txtBoxNetDocsClient.Text))
+            {
+
+                div_xml.InnerText = "Please enter a numeric Net Docs Client Id.";
+                return;
+            }
+
+            if (!rgxClientnD.IsMatch(TxtBoxnetDocsMatter.Text))
+            {
+
+                div_xml.InnerText = "Please enter a numeric Net Docs Matter Id.";
+                return;
+            }
+
             SolCaseService testWebService = new SolCaseService();
             XmlElement xmlReturn = testWebService.nD_Import(txtBoxMatterId.Text);
 
@@ -105,8 +121,8 @@ namespace SolcaseUtility
             foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
             {
                 // depending on version (doc no) switch the file name
-                // for Doc No > 0 you casnnot truct the Sub Path as that is from the original Doc! You can to make it up
-                if (row["HD-DOCUMENT-NO"].ToString() == "0")
+                // for Doc No > 1 (0 in Solcase, 1 converted for nD) you cannot truct the Sub Path as that is from the original Doc! You can to make it up
+                if (row["HD-DOCUMENT-NO"].ToString() == "1")
                 {          
                     row["filePath"] = row["DOS-PATH"].ToString() + row["SUB-PATH"].ToString() + row["HD-ORIG-DOC-NAME"].ToString();
                 } else
@@ -116,6 +132,26 @@ namespace SolcaseUtility
                     subPath = "HST" + row["HD-DOCUMENT-NAME"].ToString().Substring(0, 3) + "\\HST" + row["HD-DOCUMENT-NAME"].ToString().Substring(3, 3) + "\\";
                     row["filePath"] = row["DOS-PATH"].ToString() + subPath + row["HD-DOCUMENT-NAME"].ToString();
                 }           
+            }
+
+            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("Client"))
+            {
+                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("Client", typeof(String));
+            }
+            // Now populate the new column
+            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+            {
+                row["Client"] = txtBoxNetDocsClient.Text;
+            }
+
+            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("Matter"))
+            {
+                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("Matter", typeof(String));
+            }
+            // Now populate the new column
+            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+            {
+                row["Matter"] = TxtBoxnetDocsMatter.Text;
             }
 
             if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("FILE-NAME"))
@@ -128,6 +164,22 @@ namespace SolcaseUtility
                 row["FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
             }
 
+            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("PROFILE-TYPE"))
+            {
+                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("PROFILE-TYPE", typeof(String));
+            }
+            // Now populate the new column
+            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+            {
+                if (row["HST-DOCUMENT-TYPE"].ToString() == "E")
+                {
+                    row["PROFILE-TYPE"] = "EM";
+                } else
+                {
+                    row["PROFILE-TYPE"] = "GEN";
+                }
+            }
+
             if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("ACCESS"))
             {
                 Globals.solcaseDocs.Tables["ndImport"].Columns.Add("ACCESS", typeof(String));
@@ -135,7 +187,17 @@ namespace SolcaseUtility
             // Now populate the new column
             foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
             {
-                row["ACCESS"] = "VES";
+                row["ACCESS"] = "Internal Users|VES";
+            }
+
+            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("VERSION-KEY"))
+            {
+                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("VERSION-KEY", typeof(String));
+            }
+            // Now populate the new column
+            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+            {
+                 row["VERSION-KEY"] = row["HD-ORIG-DOC-NAME"].ToString().Substring(0,8);
             }
 
             xmlReader.Close();
@@ -160,7 +222,7 @@ namespace SolcaseUtility
         protected void ExportGridToCSV()
         {
             // lets get a datatable again
-            string[] selectedColumns = new[] { "filePath", "HISTORY-NO", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED" };
+            string[] selectedColumns = new[] { "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "VERSION-KEY", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED" };
 
             DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["ndImport"]).ToTable(false, selectedColumns);
 
@@ -205,7 +267,7 @@ namespace SolcaseUtility
             div_matterDesc.InnerText = Globals.solcaseDocs.Tables["Matter"].Rows[SelectedMatterIndex]["MAT-DESCRIPTION"].ToString();
 
             //' Note KC you cannot show columns from Client or Matter table in the Grid
-            string[] selectedColumns = new[] {"filePath", "HISTORY-NO", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED" };
+            string[] selectedColumns = new[] { "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED", "HISTORY-NO" };
 
             DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["ndImport"]).ToTable(false, selectedColumns);
 
@@ -222,12 +284,16 @@ namespace SolcaseUtility
         public static string ToCSV(this DataTable table)
         {
             var result = new StringBuilder();
-            for (int i = 0; i < table.Columns.Count; i++)
-            {
-                result.Append(table.Columns[i].ColumnName);
-                result.Append(i == table.Columns.Count - 1 ? "\n" : ",");
-            }
+            //for (int i = 0; i < table.Columns.Count; i++)
+            //{
+            //   result.Append(table.Columns[i].ColumnName);
+            //    result.Append(i == table.Columns.Count - 1 ? "\n" : ",");
+            //}
 
+            // need to ignore the natural table column header and put in the titles required by nD Import
+            // "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED""
+            result.Append("filepath,Client,Matter,Document Type,DOCUMENT NAME,DOCUMENT EXTENSION,FOLDER,ACCESS,VERSION KEY,VERSION NUMBER,CREATED BY,CREATED DATE,LAST MODIFIED BY,LAST MODIFIED DATE" + "\n");
+            
             foreach (DataRow row in table.Rows)
             {
                 for (int i = 0; i < table.Columns.Count; i++)

@@ -42,6 +42,24 @@ namespace SolcaseUtility
         protected global::System.Web.UI.WebControls.TextBox txtBoxMatterId;
 
         /// <summary>
+        /// txtBoxNetDocsClient control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBoxNetDocsClient;
+
+        /// <summary>
+        /// TxtBoxnetDocsMatter control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox TxtBoxnetDocsMatter;
+
+        /// <summary>
         /// Button11 control.
         /// </summary>
         /// <remarks>

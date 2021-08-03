@@ -13,6 +13,8 @@
             <div class="w3-panel w3-metro-light-blue">
                 <h2>Solcase History Docs Export to nD Import.</h2>
                 <asp:TextBox ID="txtBoxMatterId" runat="server" ToolTip="Enter a valid Matter Code (6 Digits '-' 6 Digits)"></asp:TextBox>
+                <h4>Net Documents Workspace Reference.</h4>
+                <asp:TextBox ID="txtBoxNetDocsClient" runat="server" ToolTip="Enter a valid Net Documents Client Code (must be numeric)"></asp:TextBox><asp:TextBox ID="TxtBoxnetDocsMatter" runat="server" ToolTip="Enter a valid Net Documents Matter Code (must be Numeric)"></asp:TextBox>
                 <asp:Button CssClass="Button" ID="Button11" runat="server" Text="Get History Docs List" OnClick="Button11_Click" Width="129px" Height="20px" />
                 <asp:Button CssClass="Button" ID="Button12" runat="server" Text="Download" OnClick="Button12_Click" Width="105px" Height="20px" />
             </div>
