@@ -98,7 +98,8 @@ From
 Where
     PUB.CLIDB.""CL-CODE"" = PUB.MATDB.""CL-CODE"" and
     PUB.MATDB.""MT-TYPE"" = PUB.MATTYPE.""MT-TYPE"" and
-    PUB.CLIDB.""DATE-OPENED"" = curdate() and
+    --PUB.CLIDB.""DATE-OPENED"" = curdate() and
+    PUB.CLIDB.""DATE-OPENED"" = TIMESTAMPADD(SQL_TSI_DAY,-2,curdate()) and
     PUB.CLIDB.""TYPE"" = 'P'
 Order By
     PUB.CLIDB.""CL-CODE"" Desc
@@ -123,6 +124,9 @@ With(NOLOCK)"
                 XmlDocument xmlDoc = new XmlDocument();
 
                 XmlNode rootNode = xmlDoc.CreateElement("SOSNewClients");
+                XmlAttribute recCount = xmlDoc.CreateAttribute("HAS-RECORDS");
+                recCount.Value = reader.HasRows.ToString();
+                rootNode.Attributes.Append(recCount);
                 xmlDoc.AppendChild(rootNode);
 
                 while (reader.Read())
