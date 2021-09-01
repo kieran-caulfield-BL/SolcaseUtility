@@ -33,7 +33,8 @@ namespace SolcaseUtility
           
     string sql = @"Select DISTINCT
     'Birkett Long LLP' AS ""DIVISION"",
-    'Individual' AS ""COMPANY-OR-INDIVIDUAL"",
+    case
+      when PUB.CLIDB.""TYPE"" = 'P' then 'Individual' else 'Company' end As ""COMPANY-OR-INDIVIDUAL"",
     PUB.CLIDB.""A-FORENAME"" As ""FIRST-NAME"",
     PUB.CLIDB.""A-NAME"" As ""LAST-NAME"",
     PUB.CLIDB.""A-TITLE"" As ""SALUTATION"",
@@ -79,6 +80,7 @@ namespace SolcaseUtility
       when locate('-',PUB.CLIDB.""TELEPHONE2"") > 0 then substr(PUB.CLIDB.""TELEPHONE2"", locate('-', PUB.CLIDB.""TELEPHONE2"") + 1)
       else ''
       end As ""PHONE-2-NOTES"",
+    PUB.CLIDB.""MAIL-ID1"" as ""EMAIL"",
     to_char(PUB.CLIDB.""A-DOB"", 'YYYY-MM-DD') As ""DOB"",
     PUB.CLIDB.GENDER as ""GENDER"",
     PUB.CLIDB.""CL-CODE"" As ""IMPORT-REFERENCE"",
@@ -87,20 +89,23 @@ namespace SolcaseUtility
     PUB.MATDB.""MT-TYPE"", 
     PUB.MATTYPE.DESCRIPTION as ""MT-TYPE-DESC"", 
     PUB.MATDB.""DATE-OPENED"" as ""MT-DATE-OPENED"", 
-    PUB.MATDB.DESCRIPTION as ""MT-DESC"", 
+    substring(PUB.MATDB.DESCRIPTION,1,120) as ""MT-DESC"", 
     PUB.MATDB.""DATE-CLOSED"" as ""MT-DATE-CLOSE"", 
+    PUB.CLIDB.""CL-CODE"" as ""CL-CODE"",
     PUB.CLIDB.""DATE-OPENED"" as ""CL-DATE-OPENED"" , 
     PUB.CLIDB.""MOD-DATE"" as ""CL-MOD-DATE"", 
     PUB.CLIDB.""MOD-TIME"" As ""CL-MOD-TIME"", 
-    PUB.CLIDB.""RISK-FLAG""
+    PUB.CLIDB.""RISK-FLAG"",
+    left(PUB.CLIDB.NOTES, locate(':',PUB.CLIDB.NOTES)-1) as ""RISK-LEVEL"",
+    left(PUB.CLIDB.NOTES, locate(';', PUB.CLIDB.NOTES)-1) as ""RISK-NOTES""
 From
     PUB.CLIDB, PUB.MATDB , PUB.MATTYPE
 Where
     PUB.CLIDB.""CL-CODE"" = PUB.MATDB.""CL-CODE"" and
     PUB.MATDB.""MT-TYPE"" = PUB.MATTYPE.""MT-TYPE"" and
     --PUB.CLIDB.""DATE-OPENED"" = curdate() and
-    PUB.CLIDB.""DATE-OPENED"" = TIMESTAMPADD(SQL_TSI_DAY,-2,curdate()) and
-    PUB.CLIDB.""TYPE"" = 'P'
+    PUB.CLIDB.""DATE-OPENED"" = TIMESTAMPADD(SQL_TSI_DAY,-7,curdate()) and
+    PUB.CLIDB.""TYPE"" in ('P', 'B')
 Order By
     PUB.CLIDB.""CL-CODE"" Desc
 With(NOLOCK)"
@@ -155,6 +160,7 @@ With(NOLOCK)"
                     XmlAttribute phone2Number = xmlDoc.CreateAttribute("PHONE-2-NUMBER");
                     XmlAttribute phone2Description = xmlDoc.CreateAttribute("PHONE-2-DESCRIPTION");
                     XmlAttribute phone2Notes = xmlDoc.CreateAttribute("PHONE-2-NOTES");
+                    XmlAttribute email = xmlDoc.CreateAttribute("EMAIL");
                     XmlAttribute dob = xmlDoc.CreateAttribute("DOB");
                     
                     XmlAttribute gender = xmlDoc.CreateAttribute("GENDER");
@@ -165,10 +171,13 @@ With(NOLOCK)"
                     XmlAttribute matterTypeDescription = xmlDoc.CreateAttribute("MT-TYPE-DESC");
                     XmlAttribute matterOpenDate = xmlDoc.CreateAttribute("MT-DATE-OPENED");
                     XmlAttribute matterDateClosed = xmlDoc.CreateAttribute("MT-DATE-CLOSE");
+                    XmlAttribute clientCode = xmlDoc.CreateAttribute("CL-CODE");
                     XmlAttribute clientOpenDate = xmlDoc.CreateAttribute("CL-DATE-OPENED");
                     XmlAttribute clientModDate = xmlDoc.CreateAttribute("CL-MOD-DATE");
                     XmlAttribute clientModTime = xmlDoc.CreateAttribute("CL-MOD-TIME");
                     XmlAttribute riskFlag = xmlDoc.CreateAttribute("RISK-FLAG");
+                    XmlAttribute riskLevel = xmlDoc.CreateAttribute("RISK-LEVEL");
+                    XmlAttribute riskNotes = xmlDoc.CreateAttribute("RISK-NOTES");
 
                     // assign values from result set reader
                     companyOrIndividual.Value = reader["COMPANY-OR-INDIVIDUAL"].ToString();
@@ -193,6 +202,7 @@ With(NOLOCK)"
                     phone2Number.Value = reader["PHONE-2-NUMBER"].ToString();
                     phone2Description.Value = reader["PHONE-2-DESCRIPTION"].ToString();
                     phone2Notes.Value = reader["PHONE-2-NOTES"].ToString();
+                    email.Value = reader["EMAIL"].ToString();
                     dob.Value = reader["DOB"].ToString();
                     
                     gender.Value = reader["GENDER"].ToString();
@@ -203,10 +213,13 @@ With(NOLOCK)"
                     matterTypeDescription.Value = reader["MT-TYPE-DESC"].ToString();
                     matterOpenDate.Value = reader["MT-DATE-OPENED"].ToString();
                     matterDateClosed.Value = reader["MT-DATE-CLOSE"].ToString();
+                    clientCode.Value = reader["CL-CODE"].ToString();
                     clientOpenDate.Value = reader["CL-DATE-OPENED"].ToString();
                     clientModDate.Value = reader["CL-MOD-DATE"].ToString();
                     clientModTime.Value = reader["CL-MOD-TIME"].ToString();
                     riskFlag.Value = reader["RISK-FLAG"].ToString();
+                    riskLevel.Value = reader["RISK-LEVEL"].ToString();
+                    riskNotes.Value = reader["RISK-NOTES"].ToString();
 
                     // assign attributes to soldocNode
                     soldocNode.Attributes.Append(companyOrIndividual);
@@ -231,6 +244,7 @@ With(NOLOCK)"
                     soldocNode.Attributes.Append(phone2Number);
                     soldocNode.Attributes.Append(phone2Description);
                     soldocNode.Attributes.Append(phone2Notes);
+                    soldocNode.Attributes.Append(email);
                     soldocNode.Attributes.Append(dob);
                     
                     soldocNode.Attributes.Append(gender);
@@ -241,10 +255,13 @@ With(NOLOCK)"
                     soldocNode.Attributes.Append(matterTypeDescription);
                     soldocNode.Attributes.Append(matterOpenDate);
                     soldocNode.Attributes.Append(matterDateClosed);
+                    soldocNode.Attributes.Append(clientCode);
                     soldocNode.Attributes.Append(clientOpenDate);
                     soldocNode.Attributes.Append(clientModDate);
                     soldocNode.Attributes.Append(clientModTime);
                     soldocNode.Attributes.Append(riskFlag);
+                    soldocNode.Attributes.Append(riskLevel);
+                    soldocNode.Attributes.Append(riskNotes);
 
                     // append node to matter
                     rootNode.AppendChild(soldocNode);
