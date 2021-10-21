@@ -178,7 +178,10 @@ namespace SolcaseUtility
                 {
                     row["PROFILE-TYPE"] = "GEN";
                 }
+
             }
+
+           
 
             if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("ACCESS"))
             {
@@ -187,7 +190,7 @@ namespace SolcaseUtility
             // Now populate the new column
             foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
             {
-                row["ACCESS"] = "Internal Users|VES";
+                row["ACCESS"] = "";
             }
 
             if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("VERSION-KEY"))
@@ -217,12 +220,18 @@ namespace SolcaseUtility
             GridViewClientDocs.DataSource = null;
            GridViewClientDocs.DataBind();
 
+            DateTime today = DateTime.Today;
+            string fileName = txtBoxMatterId.Text + today.ToString("dd-MM-yyyy") + ".csv";
+
+            // update the command text box
+            txtBoxCommand.Text = "Start C:\nDImport\nDImport /user=\"Actionstep - NetDocuments@Birkettlong.co.uk\" /pass=epiphanyCentral236 /host=upload.eu.netdocuments.com /cab=\"Demo Cabinet(Birkett Long LLP)\" /line=1 /list=\"C:\\Users\\kieran$caulfield\\Downloads\\" + fileName + "\" /maxerr=500 /utf8=N /dateformat=D /utc=N";
+
         }
 
         protected void ExportGridToCSV()
         {
             // lets get a datatable again
-            string[] selectedColumns = new[] { "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "VERSION-KEY", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED" };
+            string[] selectedColumns = new[] { "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "VERSION-KEY", "HD-DOCUMENT-NO", "HD-AUTHOR-NAME", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED" };
 
             DataTable displayedColumns = new DataView(Globals.solcaseDocs.Tables["ndImport"]).ToTable(false, selectedColumns);
 
@@ -241,6 +250,7 @@ namespace SolcaseUtility
             Response.BinaryWrite(bytes);
             Response.Flush();
             Response.End();
+                        
         }
 
 
@@ -291,7 +301,7 @@ namespace SolcaseUtility
             //}
 
             // need to ignore the natural table column header and put in the titles required by nD Import
-            // "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "HD-DOCUMENT-NO", "HD-AUTHOR", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED""
+            // "filePath", "Client", "Matter", "PROFILE-TYPE", "FILE-NAME", "EXTENSION", "ST-LOCATION", "ACCESS", "HD-DOCUMENT-NO", "HD-AUTHOR-NAME", "HD-DATE-CREATED", "HD-AMENDED-BY", "HD-DATE-AMENDED""
             result.Append("filepath,Client,Matter,Document Type,DOCUMENT NAME,DOCUMENT EXTENSION,FOLDER,ACCESS,VERSION KEY,VERSION NUMBER,CREATED BY,CREATED DATE,LAST MODIFIED BY,LAST MODIFIED DATE" + "\n");
             
             foreach (DataRow row in table.Rows)

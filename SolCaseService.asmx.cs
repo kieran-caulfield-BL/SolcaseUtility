@@ -85,12 +85,12 @@ namespace SolcaseUtility
     PUB.CLIDB.GENDER as ""GENDER"",
     PUB.CLIDB.""CL-CODE"" As ""IMPORT-REFERENCE"",
     'Client' as ""PARTICIPANT-TYPE"",
-    PUB.MATDB.""MT-CODE"", 
-    PUB.MATDB.""MT-TYPE"", 
-    PUB.MATTYPE.DESCRIPTION as ""MT-TYPE-DESC"", 
-    PUB.MATDB.""DATE-OPENED"" as ""MT-DATE-OPENED"", 
-    substring(PUB.MATDB.DESCRIPTION,1,120) as ""MT-DESC"", 
-    PUB.MATDB.""DATE-CLOSED"" as ""MT-DATE-CLOSE"", 
+    --PUB.MATDB.""MT-CODE"", 
+    --PUB.MATDB.""MT-TYPE"", 
+    --PUB.MATTYPE.DESCRIPTION as ""MT-TYPE-DESC"", 
+    --PUB.MATDB.""DATE-OPENED"" as ""MT-DATE-OPENED"", 
+    --substring(PUB.MATDB.DESCRIPTION,1,120) as ""MT-DESC"", 
+    --PUB.MATDB.""DATE-CLOSED"" as ""MT-DATE-CLOSE"", 
     PUB.CLIDB.""CL-CODE"" as ""CL-CODE"",
     PUB.CLIDB.""DATE-OPENED"" as ""CL-DATE-OPENED"" , 
     PUB.CLIDB.""MOD-DATE"" as ""CL-MOD-DATE"", 
@@ -99,12 +99,12 @@ namespace SolcaseUtility
     left(PUB.CLIDB.NOTES, locate(':',PUB.CLIDB.NOTES)-1) as ""RISK-LEVEL"",
     left(PUB.CLIDB.NOTES, locate(';', PUB.CLIDB.NOTES)-1) as ""RISK-NOTES""
 From
-    PUB.CLIDB, PUB.MATDB , PUB.MATTYPE
+    PUB.CLIDB
 Where
-    PUB.CLIDB.""CL-CODE"" = PUB.MATDB.""CL-CODE"" and
-    PUB.MATDB.""MT-TYPE"" = PUB.MATTYPE.""MT-TYPE"" and
-    --PUB.CLIDB.""DATE-OPENED"" = curdate() and
-    PUB.CLIDB.""DATE-OPENED"" = TIMESTAMPADD(SQL_TSI_DAY,-7,curdate()) and
+    --PUB.CLIDB.""CL-CODE"" = PUB.MATDB.""CL-CODE"" and
+    --PUB.MATDB.""MT-TYPE"" = PUB.MATTYPE.""MT-TYPE"" and
+    PUB.CLIDB.""DATE-OPENED"" >= curdate() and
+    --PUB.CLIDB.""DATE-OPENED"" >= TIMESTAMPADD(SQL_TSI_DAY,-5,curdate()) and
     PUB.CLIDB.""TYPE"" in ('P', 'B')
 Order By
     PUB.CLIDB.""CL-CODE"" Desc
@@ -165,12 +165,12 @@ With(NOLOCK)"
                     
                     XmlAttribute gender = xmlDoc.CreateAttribute("GENDER");
                     XmlAttribute participantType = xmlDoc.CreateAttribute("PARTICIPANT-TYPE");
-                    XmlAttribute matterCode = xmlDoc.CreateAttribute("MT-CODE");
+                    /*XmlAttribute matterCode = xmlDoc.CreateAttribute("MT-CODE");
                     XmlAttribute matterDesc = xmlDoc.CreateAttribute("MT-DESC");
                     XmlAttribute matterType = xmlDoc.CreateAttribute("MT-TYPE");
                     XmlAttribute matterTypeDescription = xmlDoc.CreateAttribute("MT-TYPE-DESC");
                     XmlAttribute matterOpenDate = xmlDoc.CreateAttribute("MT-DATE-OPENED");
-                    XmlAttribute matterDateClosed = xmlDoc.CreateAttribute("MT-DATE-CLOSE");
+                    XmlAttribute matterDateClosed = xmlDoc.CreateAttribute("MT-DATE-CLOSE");*/
                     XmlAttribute clientCode = xmlDoc.CreateAttribute("CL-CODE");
                     XmlAttribute clientOpenDate = xmlDoc.CreateAttribute("CL-DATE-OPENED");
                     XmlAttribute clientModDate = xmlDoc.CreateAttribute("CL-MOD-DATE");
@@ -207,12 +207,12 @@ With(NOLOCK)"
                     
                     gender.Value = reader["GENDER"].ToString();
                     participantType.Value = reader["PARTICIPANT-TYPE"].ToString();
-                    matterCode.Value = reader["MT-CODE"].ToString();
+                    /*matterCode.Value = reader["MT-CODE"].ToString();
                     matterDesc.Value = reader["MT-DESC"].ToString();
                     matterType.Value = reader["MT-TYPE"].ToString();
                     matterTypeDescription.Value = reader["MT-TYPE-DESC"].ToString();
                     matterOpenDate.Value = reader["MT-DATE-OPENED"].ToString();
-                    matterDateClosed.Value = reader["MT-DATE-CLOSE"].ToString();
+                    matterDateClosed.Value = reader["MT-DATE-CLOSE"].ToString();*/
                     clientCode.Value = reader["CL-CODE"].ToString();
                     clientOpenDate.Value = reader["CL-DATE-OPENED"].ToString();
                     clientModDate.Value = reader["CL-MOD-DATE"].ToString();
@@ -249,12 +249,262 @@ With(NOLOCK)"
                     
                     soldocNode.Attributes.Append(gender);
                     soldocNode.Attributes.Append(participantType);
-                    soldocNode.Attributes.Append(matterCode);
+                    /*soldocNode.Attributes.Append(matterCode);
                     soldocNode.Attributes.Append(matterDesc);
                     soldocNode.Attributes.Append(matterType);
                     soldocNode.Attributes.Append(matterTypeDescription);
                     soldocNode.Attributes.Append(matterOpenDate);
-                    soldocNode.Attributes.Append(matterDateClosed);
+                    soldocNode.Attributes.Append(matterDateClosed);*/
+                    soldocNode.Attributes.Append(clientCode);
+                    soldocNode.Attributes.Append(clientOpenDate);
+                    soldocNode.Attributes.Append(clientModDate);
+                    soldocNode.Attributes.Append(clientModTime);
+                    soldocNode.Attributes.Append(riskFlag);
+                    soldocNode.Attributes.Append(riskLevel);
+                    soldocNode.Attributes.Append(riskNotes);
+
+                    // append node to matter
+                    rootNode.AppendChild(soldocNode);
+                }
+
+                reader.Close();
+                conn.Close();
+
+                return xmlDoc.DocumentElement;
+            }
+            catch (Exception e)
+            {
+                XmlDocument xmlDocError = new XmlDocument();
+                XmlNode rootNode = xmlDocError.CreateElement("SOSNewClients");
+                xmlDocError.AppendChild(rootNode);
+                XmlNode errorNode = xmlDocError.CreateElement("WebServiceError");
+                errorNode.InnerText = e.Message.ToString();
+                rootNode.AppendChild(errorNode);
+                return xmlDocError.DocumentElement;
+            }
+        }
+
+        [WebMethod]
+        public XmlElement getSOSRiskFlagsClientsToday()
+        {
+
+            string sql = @"Select DISTINCT
+    'Birkett Long LLP' AS ""DIVISION"",
+    case
+      when PUB.CLIDB.""TYPE"" = 'P' then 'Individual' else 'Company' end As ""COMPANY-OR-INDIVIDUAL"",
+    PUB.CLIDB.""A-FORENAME"" As ""FIRST-NAME"",
+    PUB.CLIDB.""A-NAME"" As ""LAST-NAME"",
+    PUB.CLIDB.""A-TITLE"" As ""SALUTATION"",
+    PUB.CLIDB.""A-ADDRESS1"" As ""PHYSICAL-ADDR-1"",
+    PUB.CLIDB.""A-ADDRESS2"" As ""PHYSICAL-ADDR-2"",
+    PUB.CLIDB.""A-ADDRESS3"" As ""PHYSICAL-ADDR-CITY"",
+    PUB.CLIDB.""A-ADDRESS4"" As ""PHYSICAL-ADDR-STATE"",
+    PUB.CLIDB.""A-POSTCODE"" As ""PHYSICAL-ADDR-POSTCODE"",
+    'UK' As ""PHYSICAL-ADDR-COUNTRY"",
+    PUB.CLIDB.""A-ADDRESS1"" As ""POSTAL-ADDR-1"",
+    PUB.CLIDB.""A-ADDRESS2"" As ""POSTAL-ADDR-2"",
+    PUB.CLIDB.""A-ADDRESS3"" As ""POSTAL-ADDR-CITY"",
+    PUB.CLIDB.""A-ADDRESS4"" As ""POSTAL-ADDR-STATE"",
+    PUB.CLIDB.""A-POSTCODE"" As ""POSTAL-ADDR-POSTCODE"",    
+    'UK' As ""POSTAL-ADDR-COUNTRY"",
+    case 
+      when locate('(',PUB.CLIDB.""TELEPHONE1"") > 0 then left(PUB.CLIDB.""TELEPHONE1"", locate('(', PUB.CLIDB.""TELEPHONE1"") - 1)
+      when locate('/',PUB.CLIDB.""TELEPHONE1"") > 0 then left(PUB.CLIDB.""TELEPHONE1"", locate('/', PUB.CLIDB.""TELEPHONE1"") - 1)
+      when locate('-',PUB.CLIDB.""TELEPHONE1"") > 0 then left(PUB.CLIDB.""TELEPHONE1"", locate('-', PUB.CLIDB.""TELEPHONE1"") - 1) 
+      else PUB.CLIDB.""TELEPHONE1""
+      end As ""PHONE-1-NUMBER"",
+    case 
+      when left(PUB.CLIDB.""TELEPHONE1"", 2) = '07' then 'Mobile'
+      else 'Home'
+      end As ""PHONE-1-DESCRIPTION"",    
+    case 
+      when locate('(',PUB.CLIDB.""TELEPHONE1"") > 0 then substr(PUB.CLIDB.""TELEPHONE1"", locate('(', PUB.CLIDB.""TELEPHONE1""))
+      when locate('-',PUB.CLIDB.""TELEPHONE1"") > 0 then substr(PUB.CLIDB.""TELEPHONE1"", locate('-', PUB.CLIDB.""TELEPHONE1"") + 1) 
+      else ''
+      end As ""PHONE-1-NOTES"",
+    case 
+      when left(PUB.CLIDB.""TELEPHONE2"", 2) = '07' then 'Mobile'
+      else 'Home'
+      end As ""PHONE-2-DESCRIPTION"",    
+    case 
+      when locate('(',PUB.CLIDB.""TELEPHONE2"") > 0 then left(PUB.CLIDB.""TELEPHONE2"", locate('(', PUB.CLIDB.""TELEPHONE2"") - 1)
+      when locate('/',PUB.CLIDB.""TELEPHONE1"") > 0 then substr(PUB.CLIDB.""TELEPHONE1"", locate('/', PUB.CLIDB.""TELEPHONE1"") + 1) 
+      when locate('-',PUB.CLIDB.""TELEPHONE2"") > 0 then right(PUB.CLIDB.""TELEPHONE2"", locate('-', PUB.CLIDB.""TELEPHONE1""))   
+      else PUB.CLIDB.""TELEPHONE2""
+      end As ""PHONE-2-NUMBER"",
+    case 
+      when locate('(',PUB.CLIDB.""TELEPHONE2"") > 0 then substr(PUB.CLIDB.""TELEPHONE2"", locate('(', PUB.CLIDB.""TELEPHONE2"")) 
+      when locate('-',PUB.CLIDB.""TELEPHONE2"") > 0 then substr(PUB.CLIDB.""TELEPHONE2"", locate('-', PUB.CLIDB.""TELEPHONE2"") + 1)
+      else ''
+      end As ""PHONE-2-NOTES"",
+    PUB.CLIDB.""MAIL-ID1"" as ""EMAIL"",
+    to_char(PUB.CLIDB.""A-DOB"", 'YYYY-MM-DD') As ""DOB"",
+    PUB.CLIDB.GENDER as ""GENDER"",
+    PUB.CLIDB.""CL-CODE"" As ""IMPORT-REFERENCE"",
+    'Client' as ""PARTICIPANT-TYPE"",
+    PUB.CLIDB.""CL-CODE"" as ""CL-CODE"",
+    PUB.CLIDB.""DATE-OPENED"" as ""CL-DATE-OPENED"" , 
+    PUB.CLIDB.""MOD-DATE"" as ""CL-MOD-DATE"", 
+    PUB.CLIDB.""MOD-TIME"" As ""CL-MOD-TIME"", 
+    PUB.CLIDB.""RISK-FLAG"",
+    left(PUB.CLIDB.NOTES, locate(':',PUB.CLIDB.NOTES)-1) as ""RISK-LEVEL"",
+    left(PUB.CLIDB.NOTES, locate(';', PUB.CLIDB.NOTES)-1) as ""RISK-NOTES""
+From
+    PUB.CLIDB
+Where
+    PUB.CLIDB.""MOD-DATE"" >= curdate() and
+    --PUB.CLIDB.""DATE-OPENED"" >= TIMESTAMPADD(SQL_TSI_DAY,-5,curdate()) and
+    PUB.CLIDB.""TYPE"" in ('P', 'B') and
+    PUB.CLIDB.""RISK-FLAG"" = 1
+Order By
+    PUB.CLIDB.""CL-CODE"" Desc
+With(NOLOCK)"
+        ;
+            OdbcConnection conn = null;
+            OdbcDataReader reader = null;
+
+            try
+            {
+                // open connection
+                conn = new OdbcConnection(ConfigurationManager.ConnectionStrings["SOSLivex64"].ToString());
+                conn.Open();
+                // execute the SQL
+                OdbcCommand cmd = new OdbcCommand(sql, conn);
+                //cmd.Parameters.Add("MatterIdentifier", OdbcType.VarChar).Value = inputMatterCode; // "example 081389-000002"
+                reader = cmd.ExecuteReader();
+
+                //Console.WriteLine("Database = {0} \nDriver = {1} \nQuery {2}\nConnection String = {3}\nServer Version = {4}\nDataSource = {5}",
+                //conn.Database, conn.Driver, cmd.CommandText, conn.ConnectionString, conn.ServerVersion, conn.DataSource);
+
+                XmlDocument xmlDoc = new XmlDocument();
+
+                XmlNode rootNode = xmlDoc.CreateElement("SOSNewClients");
+                XmlAttribute recCount = xmlDoc.CreateAttribute("HAS-RECORDS");
+                recCount.Value = reader.HasRows.ToString();
+                rootNode.Attributes.Append(recCount);
+                xmlDoc.AppendChild(rootNode);
+
+                while (reader.Read())
+                {
+                    XmlNode soldocNode = xmlDoc.CreateElement("IndividualClient");
+                    XmlAttribute importReference = xmlDoc.CreateAttribute("IMPORT-REFERENCE");
+                    XmlAttribute companyOrIndividual = xmlDoc.CreateAttribute("COMPANY-OR-INDIVIDUAL");
+                    XmlAttribute firstName = xmlDoc.CreateAttribute("FIRST-NAME");
+                    XmlAttribute lastName = xmlDoc.CreateAttribute("LAST-NAME");
+                    XmlAttribute salutation = xmlDoc.CreateAttribute("SALUTATION");
+                    XmlAttribute physicalAddr1 = xmlDoc.CreateAttribute("PHYSICAL-ADDR-1");
+                    XmlAttribute physicalAddr2 = xmlDoc.CreateAttribute("PHYSICAL-ADDR-2");
+                    XmlAttribute physicalAddrCity = xmlDoc.CreateAttribute("PHYSICAL-ADDR-CITY");
+                    XmlAttribute physicalAddrState = xmlDoc.CreateAttribute("PHYSICAL-ADDR-STATE");
+                    XmlAttribute physicalAddrPostCode = xmlDoc.CreateAttribute("PHYSICAL-ADDR-POSTCODE");
+                    XmlAttribute physicalAddrCountry = xmlDoc.CreateAttribute("PHYSICAL-ADDR-COUNTRY");
+                    XmlAttribute postalAddr1 = xmlDoc.CreateAttribute("POSTAL-ADDR-1");
+                    XmlAttribute postalAddr2 = xmlDoc.CreateAttribute("POSTAL-ADDR-2");
+                    XmlAttribute postalAddrCity = xmlDoc.CreateAttribute("POSTAL-ADDR-CITY");
+                    XmlAttribute postalAddrState = xmlDoc.CreateAttribute("POSTAL-ADDR-STATE");
+                    XmlAttribute postalAddrPostCode = xmlDoc.CreateAttribute("POSTAL-ADDR-POSTCODE");
+                    XmlAttribute postalAddrCountry = xmlDoc.CreateAttribute("POSTAL-ADDR-COUNTRY");
+                    XmlAttribute phone1Number = xmlDoc.CreateAttribute("PHONE-1-NUMBER");
+                    XmlAttribute phone1Description = xmlDoc.CreateAttribute("PHONE-1-DESCRIPTION");
+                    XmlAttribute phone1Notes = xmlDoc.CreateAttribute("PHONE-1-NOTES");
+                    XmlAttribute phone2Number = xmlDoc.CreateAttribute("PHONE-2-NUMBER");
+                    XmlAttribute phone2Description = xmlDoc.CreateAttribute("PHONE-2-DESCRIPTION");
+                    XmlAttribute phone2Notes = xmlDoc.CreateAttribute("PHONE-2-NOTES");
+                    XmlAttribute email = xmlDoc.CreateAttribute("EMAIL");
+                    XmlAttribute dob = xmlDoc.CreateAttribute("DOB");
+
+                    XmlAttribute gender = xmlDoc.CreateAttribute("GENDER");
+                    XmlAttribute participantType = xmlDoc.CreateAttribute("PARTICIPANT-TYPE");
+                    /*XmlAttribute matterCode = xmlDoc.CreateAttribute("MT-CODE");
+                    XmlAttribute matterDesc = xmlDoc.CreateAttribute("MT-DESC");
+                    XmlAttribute matterType = xmlDoc.CreateAttribute("MT-TYPE");
+                    XmlAttribute matterTypeDescription = xmlDoc.CreateAttribute("MT-TYPE-DESC");
+                    XmlAttribute matterOpenDate = xmlDoc.CreateAttribute("MT-DATE-OPENED");
+                    XmlAttribute matterDateClosed = xmlDoc.CreateAttribute("MT-DATE-CLOSE");*/
+                    XmlAttribute clientCode = xmlDoc.CreateAttribute("CL-CODE");
+                    XmlAttribute clientOpenDate = xmlDoc.CreateAttribute("CL-DATE-OPENED");
+                    XmlAttribute clientModDate = xmlDoc.CreateAttribute("CL-MOD-DATE");
+                    XmlAttribute clientModTime = xmlDoc.CreateAttribute("CL-MOD-TIME");
+                    XmlAttribute riskFlag = xmlDoc.CreateAttribute("RISK-FLAG");
+                    XmlAttribute riskLevel = xmlDoc.CreateAttribute("RISK-LEVEL");
+                    XmlAttribute riskNotes = xmlDoc.CreateAttribute("RISK-NOTES");
+
+                    // assign values from result set reader
+                    companyOrIndividual.Value = reader["COMPANY-OR-INDIVIDUAL"].ToString();
+                    firstName.Value = reader["FIRST-NAME"].ToString();
+                    lastName.Value = reader["LAST-NAME"].ToString();
+                    salutation.Value = reader["SALUTATION"].ToString();
+                    physicalAddr1.Value = reader["PHYSICAL-ADDR-1"].ToString();
+                    physicalAddr2.Value = reader["PHYSICAL-ADDR-2"].ToString();
+                    physicalAddrCity.Value = reader["PHYSICAL-ADDR-CITY"].ToString();
+                    physicalAddrState.Value = reader["PHYSICAL-ADDR-STATE"].ToString();
+                    physicalAddrPostCode.Value = reader["PHYSICAL-ADDR-POSTCODE"].ToString();
+                    physicalAddrCountry.Value = reader["PHYSICAL-ADDR-COUNTRY"].ToString();
+                    postalAddr1.Value = reader["POSTAL-ADDR-1"].ToString();
+                    postalAddr2.Value = reader["POSTAL-ADDR-2"].ToString();
+                    postalAddrCity.Value = reader["POSTAL-ADDR-CITY"].ToString();
+                    postalAddrState.Value = reader["POSTAL-ADDR-STATE"].ToString();
+                    postalAddrPostCode.Value = reader["POSTAL-ADDR-POSTCODE"].ToString();
+                    postalAddrCountry.Value = reader["POSTAL-ADDR-COUNTRY"].ToString();
+                    phone1Number.Value = reader["PHONE-1-NUMBER"].ToString();
+                    phone1Description.Value = reader["PHONE-1-DESCRIPTION"].ToString();
+                    phone1Notes.Value = reader["PHONE-1-NOTES"].ToString();
+                    phone2Number.Value = reader["PHONE-2-NUMBER"].ToString();
+                    phone2Description.Value = reader["PHONE-2-DESCRIPTION"].ToString();
+                    phone2Notes.Value = reader["PHONE-2-NOTES"].ToString();
+                    email.Value = reader["EMAIL"].ToString();
+                    dob.Value = reader["DOB"].ToString();
+
+                    gender.Value = reader["GENDER"].ToString();
+                    participantType.Value = reader["PARTICIPANT-TYPE"].ToString();
+                    /*matterCode.Value = reader["MT-CODE"].ToString();
+                    matterDesc.Value = reader["MT-DESC"].ToString();
+                    matterType.Value = reader["MT-TYPE"].ToString();
+                    matterTypeDescription.Value = reader["MT-TYPE-DESC"].ToString();
+                    matterOpenDate.Value = reader["MT-DATE-OPENED"].ToString();
+                    matterDateClosed.Value = reader["MT-DATE-CLOSE"].ToString();*/
+                    clientCode.Value = reader["CL-CODE"].ToString();
+                    clientOpenDate.Value = reader["CL-DATE-OPENED"].ToString();
+                    clientModDate.Value = reader["CL-MOD-DATE"].ToString();
+                    clientModTime.Value = reader["CL-MOD-TIME"].ToString();
+                    riskFlag.Value = reader["RISK-FLAG"].ToString();
+                    riskLevel.Value = reader["RISK-LEVEL"].ToString();
+                    riskNotes.Value = reader["RISK-NOTES"].ToString();
+
+                    // assign attributes to soldocNode
+                    soldocNode.Attributes.Append(companyOrIndividual);
+                    soldocNode.Attributes.Append(firstName);
+                    soldocNode.Attributes.Append(lastName);
+                    soldocNode.Attributes.Append(salutation);
+                    soldocNode.Attributes.Append(physicalAddr1);
+                    soldocNode.Attributes.Append(physicalAddr2);
+                    soldocNode.Attributes.Append(physicalAddrCity);
+                    soldocNode.Attributes.Append(physicalAddrState);
+                    soldocNode.Attributes.Append(physicalAddrPostCode);
+                    soldocNode.Attributes.Append(physicalAddrCountry);
+                    soldocNode.Attributes.Append(postalAddr1);
+                    soldocNode.Attributes.Append(postalAddr2);
+                    soldocNode.Attributes.Append(postalAddrCity);
+                    soldocNode.Attributes.Append(postalAddrState);
+                    soldocNode.Attributes.Append(postalAddrPostCode);
+                    soldocNode.Attributes.Append(postalAddrCountry);
+                    soldocNode.Attributes.Append(phone1Number);
+                    soldocNode.Attributes.Append(phone1Description);
+                    soldocNode.Attributes.Append(phone1Notes);
+                    soldocNode.Attributes.Append(phone2Number);
+                    soldocNode.Attributes.Append(phone2Description);
+                    soldocNode.Attributes.Append(phone2Notes);
+                    soldocNode.Attributes.Append(email);
+                    soldocNode.Attributes.Append(dob);
+
+                    soldocNode.Attributes.Append(gender);
+                    soldocNode.Attributes.Append(participantType);
+                    /*soldocNode.Attributes.Append(matterCode);
+                    soldocNode.Attributes.Append(matterDesc);
+                    soldocNode.Attributes.Append(matterType);
+                    soldocNode.Attributes.Append(matterTypeDescription);
+                    soldocNode.Attributes.Append(matterOpenDate);
+                    soldocNode.Attributes.Append(matterDateClosed);*/
                     soldocNode.Attributes.Append(clientCode);
                     soldocNode.Attributes.Append(clientOpenDate);
                     soldocNode.Attributes.Append(clientModDate);
@@ -522,6 +772,7 @@ order by
     PUB.""HISTORY-DOCS"".""ORIG-DOC-NAME"" As ""HD-ORIG-DOC-NAME"",
     PUB.""HISTORY-DOCS"".""DOCUMENT-NAME"" As ""HD-DOCUMENT-NAME"",
     PUB.""HISTORY-DOCS"".AUTHOR As ""HD-AUTHOR"",
+    PUB.FEE.NAME as ""HD-AUTHOR-NAME"",
     PUB.""HISTORY-DOCS"".""DOCUMENT-TYPE"" As ""HD-DOCUMENT-TYPE"",
     PUB.""HISTORY-DOCS"".""FINAL-VERSION"" As ""HD-FINAL-VERSION"",
     PUB.""HISTORY-DOCS"".""DATE-AMENDED"" As ""HD-DATE-AMENDED"",
@@ -544,6 +795,7 @@ From
             And PUB.HISTORY.""DATE-INSERTED"" >= PUB.MATDB.""DATE-OPENED"" Inner Join
     PUB.""HISTORY-DOCS"" On PUB.""HISTORY-DOCS"".""MT-CODE"" = PUB.HISTORY.""MT-CODE""
             And PUB.""HISTORY-DOCS"".""ORIG-DOC-NAME"" = PUB.HISTORY.""DOCUMENT-NAME"" Inner Join
+    PUB.FEE on PUB.FEE.""FEE-EARNER"" = PUB.""HISTORY-DOCS"".AUTHOR Inner Join
     PUB.""DOC-CONTROL"" On PUB.""DOC-CONTROL"".""DOC-ID"" = PUB.HISTORY.""DOCUMENT-NAME"" Inner Join
     PUB.""FILE-LOCATION"" On PUB.""FILE-LOCATION"".""LOC-NAME"" = PUB.""DOC-CONTROL"".""ST-LOCATION""
 Where
@@ -617,6 +869,7 @@ order by
                     XmlAttribute hdOrigDocName = xmlDoc.CreateAttribute("HD-ORIG-DOC-NAME");
                     XmlAttribute hdDocName = xmlDoc.CreateAttribute("HD-DOCUMENT-NAME");
                     XmlAttribute hdAuthor = xmlDoc.CreateAttribute("HD-AUTHOR");
+                    XmlAttribute hdAuthorName = xmlDoc.CreateAttribute("HD-AUTHOR-NAME");
                     XmlAttribute hdDocType = xmlDoc.CreateAttribute("HD-DOCUMENT-TYPE");
                     XmlAttribute hdFinalVersion = xmlDoc.CreateAttribute("HD-FINAL-VERSION");
                     XmlAttribute hdDateAmended = xmlDoc.CreateAttribute("HD-DATE-AMENDED");
@@ -651,6 +904,7 @@ order by
                     hdOrigDocName.Value = reader["HD-ORIG-DOC-NAME"].ToString();
                     hdDocName.Value = reader["HD-DOCUMENT-NAME"].ToString();
                     hdAuthor.Value = reader["HD-AUTHOR"].ToString();
+                    hdAuthorName.Value = reader["HD-AUTHOR-NAME"].ToString().Replace(' ', '.') + "@birkettlong.co.uk";
                     hdDocType.Value = reader["HD-DOCUMENT-TYPE"].ToString();
                     hdFinalVersion.Value = reader["HD-FINAL-VERSION"].ToString();
                     hdDateAmended.Value = reader["HD-DATE-AMENDED"].ToString();
@@ -682,6 +936,7 @@ order by
                     soldocNode.Attributes.Append(hdOrigDocName);
                     soldocNode.Attributes.Append(hdDocName);
                     soldocNode.Attributes.Append(hdAuthor);
+                    soldocNode.Attributes.Append(hdAuthorName);
                     soldocNode.Attributes.Append(hdDocType);
                     soldocNode.Attributes.Append(hdFinalVersion);
                     soldocNode.Attributes.Append(hdDateAmended);

@@ -17,6 +17,7 @@
                 <asp:TextBox ID="txtBoxNetDocsClient" runat="server" ToolTip="Enter a valid Net Documents Client Code (must be numeric)"></asp:TextBox><asp:TextBox ID="TxtBoxnetDocsMatter" runat="server" ToolTip="Enter a valid Net Documents Matter Code (must be Numeric)"></asp:TextBox>
                 <asp:Button CssClass="Button" ID="Button11" runat="server" Text="Get History Docs List" OnClick="Button11_Click" Width="129px" Height="20px" />
                 <asp:Button CssClass="Button" ID="Button12" runat="server" Text="Download" OnClick="Button12_Click" Width="105px" Height="20px" />
+                <asp:TextBox ID="txtBoxCommand" runat="server" Width="563px" ToolTip="Copy and Paste to the command line to run ndImport for your file"></asp:TextBox>
             </div>
             <hr />
             <div id="div_xml" class="w3-metro-grey" runat="server"></div>
