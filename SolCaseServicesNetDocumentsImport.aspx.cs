@@ -12,6 +12,10 @@ using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.Mvc;
+using System.Configuration;
+using System.Collections.Specialized;
+using Microsoft.VisualBasic.FileIO;
+using System.Windows.Forms;
 
 namespace SolcaseUtility
 {
@@ -59,6 +63,8 @@ namespace SolcaseUtility
                 return builder.ToString();
             }
         }
+
+
 
 
         protected void Page_Load(object sender, EventArgs e)
@@ -210,7 +216,7 @@ namespace SolcaseUtility
 
             foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
             {
-                TreeNode matterNode = new TreeNode(row["MT-CODE"].ToString());
+                System.Web.UI.WebControls.TreeNode matterNode = new System.Web.UI.WebControls.TreeNode(row["MT-CODE"].ToString());
 
                 TreeViewMatterList.Nodes.Add(matterNode);
 
@@ -224,7 +230,13 @@ namespace SolcaseUtility
             string fileName = txtBoxMatterId.Text + today.ToString("dd-MM-yyyy") + ".csv";
 
             // update the command text box
-            txtBoxCommand.Text = "Start C:\nDImport\nDImport /user=\"Actionstep - NetDocuments@Birkettlong.co.uk\" /pass=epiphanyCentral236 /host=upload.eu.netdocuments.com /cab=\"Demo Cabinet(Birkett Long LLP)\" /line=1 /list=\"C:\\Users\\kieran$caulfield\\Downloads\\" + fileName + "\" /maxerr=500 /utf8=N /dateformat=D /utc=N";
+            // build command line from app setrtings
+            string host = ConfigurationManager.AppSettings.Get("host");
+            string user = ConfigurationManager.AppSettings.Get("user");
+            string pass = ConfigurationManager.AppSettings.Get("pass");
+            string cabinet = ConfigurationManager.AppSettings.Get("CurrentCabinet");
+
+            txtBoxCommand.Text = "Start C:\\nDImport\\ndimport /user=" + user + " /pass=" + pass + " /host=" + host + " /cab=\""+ cabinet + "\" /list=\"C:\\Users\\kieran$caulfield\\Downloads\\" + fileName + "\" /maxerr=500 /utf8=N /dateformat=D /utc=N";
 
         }
 
@@ -287,6 +299,91 @@ namespace SolcaseUtility
 
         }
 
+        protected void btnUpload_Click(object sender, EventArgs e)
+        {
+            //https://docs.microsoft.com/en-us/troubleshoot/aspnet/upload-file-to-web-site
+
+            string strFileName;
+            string strFilePath;
+            string strFolder;
+            strFolder = Server.MapPath("./upload/");
+            // Retrieve the name of the file that is posted.
+            strFileName = oFile.PostedFile.FileName;
+            strFileName = Path.GetFileName(strFileName);
+            if (oFile.Value != "")
+            {
+                // Create the folder if it does not exist.
+                if (!Directory.Exists(strFolder))
+                {
+                    Directory.CreateDirectory(strFolder);
+                }
+                // Save the uploaded file to the server.
+                strFilePath = strFolder + strFileName;
+                if (File.Exists(strFilePath))
+                {
+                    lblUploadResult.Text = strFileName + " already exists on the server!";
+                }
+                else
+                {
+                    oFile.PostedFile.SaveAs(strFilePath);
+                    lblUploadResult.Text = strFileName + " has been successfully uploaded.";
+
+                    string csvPath = strFolder + strFileName;
+
+                    try
+                    {
+                        ReadCSV csv = new ReadCSV(csvPath);
+
+                        try
+                        {
+                            //UploadGrid.DataBind();
+                            UploadGrid.DataSource = csv.readCSV;
+                            UploadGrid.DataBind();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+
+                }
+            }
+            else
+            {
+                lblUploadResult.Text = "Click 'Browse' to select the file to upload.";
+            }
+            // Display the result of the upload.
+            frmConfirmation.Visible = true;
+        }
+
+        protected void UploadGrid_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //GridViewRow row = UploadGrid.SelectedRow;
+
+            // now populate the fields on the screen
+            //txtBoxMatterId.Text = row.Cells[1].Text;
+            txtBoxMatterId.Text = UploadGrid.SelectedRow.Cells[2].Text;
+            txtBoxNetDocsClient.Text = UploadGrid.SelectedRow.Cells[3].Text;
+            TxtBoxnetDocsMatter.Text = UploadGrid.SelectedRow.Cells[4].Text;
+
+        }
+
+        protected void UploadGrid_Sorting(object sender, GridViewSortEventArgs e)
+        {
+
+        }
+
+        protected void UploadGrid_SelectedIndexChanging(object sender, GridViewSelectEventArgs e)
+        {
+            // now populate the fields on the screen
+            txtBoxMatterId.Text = UploadGrid.SelectedRow.Cells[2].Text;
+            txtBoxNetDocsClient.Text = UploadGrid.SelectedRow.Cells[3].Text;
+            TxtBoxnetDocsMatter.Text = UploadGrid.SelectedRow.Cells[4].Text;
+        }
     }
 
     public static class Extensions
@@ -314,6 +411,8 @@ namespace SolcaseUtility
             }
 
             return result.ToString();
+
+
         }
     }
 
@@ -385,5 +484,69 @@ namespace SolcaseUtility
             }
         }
 
+    }
+
+    public class ReadCSV
+    {
+        public DataTable readCSV;
+
+        public ReadCSV(string fileName, bool firstRowContainsFieldNames = true)
+        {
+            readCSV = GenerateDataTable(fileName, firstRowContainsFieldNames);
+        }
+
+        private static DataTable GenerateDataTable(string fileName, bool firstRowContainsFieldNames = true)
+        {
+            DataTable result = new DataTable();
+
+            if (fileName == "")
+            {
+                return result;
+            }
+
+            string delimiters = ",";
+            string extension = Path.GetExtension(fileName);
+
+            if (extension.ToLower() == "txt")
+                delimiters = "\t";
+            else if (extension.ToLower() == "csv")
+                delimiters = ",";
+
+            var rowCount = 0;
+
+            using (TextFieldParser tfp = new TextFieldParser(fileName))
+            {
+                tfp.SetDelimiters(delimiters);
+
+                // Get The Column Names
+                if (!tfp.EndOfData)
+                {
+                    rowCount++;
+                    string[] fields = tfp.ReadFields();
+
+                    for (int i = 0; i < fields.Count(); i++)
+                    {
+                        if (firstRowContainsFieldNames) 
+                            result.Columns.Add(fields[i]);                 
+                         else
+                           result.Columns.Add("Col" + i); 
+                    }
+
+                    // If first line is data then add it
+                    if (!firstRowContainsFieldNames)
+                        result.Rows.Add(fields);
+                }
+
+                // Get Remaining Rows from the CSV
+                while (!tfp.EndOfData)
+                    result.Rows.Add(tfp.ReadFields());
+                
+
+            }
+
+            // filter out rows where teh Client Id or File Reference is not set propertly or at all
+
+            return result;
+        }
     }
 }
