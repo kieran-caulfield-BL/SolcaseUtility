@@ -114,117 +114,122 @@ namespace SolcaseUtility
             Globals.solcaseDocs = new DataSet();
             Globals.solcaseDocs.ReadXml(xmlReader);
 
-            // populate the client name removed from NetDocs Importer
-            //div_clientName.InnerText = Globals.solcaseDocs.Tables["Client"].Rows[0]["CL-NAME"].ToString();
-
-            // create an additional column for the dataset
-            // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("filePath"))
+            // if only <SolcaseDocs/> returned then no data has been found
+            if (!Globals.solcaseDocs.Tables.Contains("ndImport")) {
+                div_debug.InnerText = "Query Timeout or Matter Not Found on Solcase";
+            } else
             {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("filePath", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                // depending on version (doc no) switch the file name
-                // for Doc No > 1 (0 in Solcase, 1 converted for nD) you cannot truct the Sub Path as that is from the original Doc! You can to make it up
-                if (row["HD-DOCUMENT-NO"].ToString() == "1")
-                {          
-                    row["filePath"] = row["DOS-PATH"].ToString() + row["SUB-PATH"].ToString() + row["HD-ORIG-DOC-NAME"].ToString();
-                } else
+                // create an additional column for the dataset
+                // create a new dataset table "SolDoc" column to generate the proposed file name if not exists
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("filePath"))
                 {
-                    // create the subpath
-                    string subPath = "";
-                    subPath = "HST" + row["HD-DOCUMENT-NAME"].ToString().Substring(0, 3) + "\\HST" + row["HD-DOCUMENT-NAME"].ToString().Substring(3, 3) + "\\";
-                    row["filePath"] = row["DOS-PATH"].ToString() + subPath + row["HD-DOCUMENT-NAME"].ToString();
-                }           
-            }
-
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("Client"))
-            {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("Client", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                row["Client"] = txtBoxNetDocsClient.Text;
-            }
-
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("Matter"))
-            {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("Matter", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                row["Matter"] = TxtBoxnetDocsMatter.Text;
-            }
-
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("FILE-NAME"))
-            {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("FILE-NAME", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                row["FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
-            }
-
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("PROFILE-TYPE"))
-            {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("PROFILE-TYPE", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                if (row["HST-DOCUMENT-TYPE"].ToString() == "E")
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("filePath", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
                 {
-                    row["PROFILE-TYPE"] = "EM";
-                } else
-                {
-                    row["PROFILE-TYPE"] = "GEN";
+                    // depending on version (doc no) switch the file name
+                    // for Doc No > 1 (0 in Solcase, 1 converted for nD) you cannot truct the Sub Path as that is from the original Doc! You can to make it up
+                    if (row["HD-DOCUMENT-NO"].ToString() == "1")
+                    {
+                        row["filePath"] = row["DOS-PATH"].ToString() + row["SUB-PATH"].ToString() + row["HD-ORIG-DOC-NAME"].ToString();
+                    }
+                    else
+                    {
+                        // create the subpath
+                        string subPath = "";
+                        subPath = "HST" + row["HD-DOCUMENT-NAME"].ToString().Substring(0, 3) + "\\HST" + row["HD-DOCUMENT-NAME"].ToString().Substring(3, 3) + "\\";
+                        row["filePath"] = row["DOS-PATH"].ToString() + subPath + row["HD-DOCUMENT-NAME"].ToString();
+                    }
                 }
 
-            }
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("Client"))
+                {
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("Client", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+                {
+                    row["Client"] = txtBoxNetDocsClient.Text;
+                }
 
-           
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("Matter"))
+                {
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("Matter", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+                {
+                    row["Matter"] = TxtBoxnetDocsMatter.Text;
+                }
 
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("ACCESS"))
-            {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("ACCESS", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                row["ACCESS"] = "";
-            }
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("FILE-NAME"))
+                {
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("FILE-NAME", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+                {
+                    row["FILE-NAME"] = FileNameCorrector.ToValidFileName(row["HST-DESCRIPTION"].ToString() + "." + row["EXTENSION"].ToString());
+                }
 
-            if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("VERSION-KEY"))
-            {
-                Globals.solcaseDocs.Tables["ndImport"].Columns.Add("VERSION-KEY", typeof(String));
-            }
-            // Now populate the new column
-            foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
-            {
-                 row["VERSION-KEY"] = row["HD-ORIG-DOC-NAME"].ToString().Substring(0,8);
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("PROFILE-TYPE"))
+                {
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("PROFILE-TYPE", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+                {
+                    if (row["HST-DOCUMENT-TYPE"].ToString() == "E")
+                    {
+                        row["PROFILE-TYPE"] = "EM";
+                    }
+                    else
+                    {
+                        row["PROFILE-TYPE"] = "GEN";
+                    }
+
+                }
+
+
+
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("ACCESS"))
+                {
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("ACCESS", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+                {
+                    row["ACCESS"] = "";
+                }
+
+                if (!Globals.solcaseDocs.Tables["ndImport"].Columns.Contains("VERSION-KEY"))
+                {
+                    Globals.solcaseDocs.Tables["ndImport"].Columns.Add("VERSION-KEY", typeof(String));
+                }
+                // Now populate the new column
+                foreach (DataRow row in Globals.solcaseDocs.Tables["ndImport"].Rows)
+                {
+                    row["VERSION-KEY"] = row["HD-ORIG-DOC-NAME"].ToString().Substring(0, 8);
+                }
+               
+                // populate the tree view
+                TreeViewMatterList.Nodes.Clear();
+
+                foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
+                {
+                    System.Web.UI.WebControls.TreeNode matterNode = new System.Web.UI.WebControls.TreeNode(row["MT-CODE"].ToString());
+
+                    TreeViewMatterList.Nodes.Add(matterNode);
+
+                }
             }
 
             xmlReader.Close();
 
-            // populate the tree view
-            TreeViewMatterList.Nodes.Clear();
-
-            foreach (DataRow row in Globals.solcaseDocs.Tables["Matter"].Rows)
-            {
-                System.Web.UI.WebControls.TreeNode matterNode = new System.Web.UI.WebControls.TreeNode(row["MT-CODE"].ToString());
-
-                TreeViewMatterList.Nodes.Add(matterNode);
-
-            }
-
             // clear the grid view
             GridViewClientDocs.DataSource = null;
-           GridViewClientDocs.DataBind();
+            GridViewClientDocs.DataBind();
 
             DateTime today = DateTime.Today;
             string fileName = txtBoxMatterId.Text + today.ToString("dd-MM-yyyy") + ".csv";
@@ -236,7 +241,7 @@ namespace SolcaseUtility
             string pass = ConfigurationManager.AppSettings.Get("pass");
             string cabinet = ConfigurationManager.AppSettings.Get("CurrentCabinet");
 
-            txtBoxCommand.Text = "Start C:\\nDImport\\ndimport /user=" + user + " /pass=" + pass + " /host=" + host + " /cab=\""+ cabinet + "\" /list=\"C:\\Users\\kieran$caulfield\\Downloads\\" + fileName + "\" /maxerr=500 /utf8=N /dateformat=D /utc=N";
+            txtBoxCommand.Text = "Start C:\\nDImport\\ndimport /user=" + user + " /pass=" + pass + " /host=" + host + " /cab=\""+ ddlRepository.SelectedValue.ToString() + "\" /list=\"C:\\Users\\" + ddlBLUser.SelectedValue.ToString() + "\\Downloads\\" + fileName + "\" /maxerr=500 /utf8=N /dateformat=D /utc=N";
 
         }
 
@@ -384,6 +389,7 @@ namespace SolcaseUtility
             txtBoxNetDocsClient.Text = UploadGrid.SelectedRow.Cells[3].Text;
             TxtBoxnetDocsMatter.Text = UploadGrid.SelectedRow.Cells[4].Text;
         }
+
     }
 
     public static class Extensions

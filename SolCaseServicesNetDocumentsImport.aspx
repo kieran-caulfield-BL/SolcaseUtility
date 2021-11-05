@@ -11,13 +11,13 @@
     </style>
 </head>
 <body>
-    <form id="SolCaseServicesNDImport" method="post" runat="server" enctype="multipart/form-data" action="SolCaseServicesNetDocumentsImport.aspx">
+    <form id="SolCaseServicesNDImport" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="true" />
         <div style="font-family:Arial, Helvetica, sans-serif" class="w3-container">
         Actionstep File to Upload to Server <input id="oFile" type="file" runat="server" name="oFile" />
-        <asp:button id="btnUpload" type="submit" text="Upload" runat="server" OnClick="btnUpload_Click"></asp:button>
+        <asp:button id="btnUpload" type="submit" text="Upload" runat="server" OnClick="btnUpload_Click" Height="22px" Width="66px"></asp:button>
         <asp:Panel ID="frmConfirmation" Visible="False" Runat="server">
-            <asp:Label id="lblUploadResult" Runat="server"></asp:Label>  
+            <asp:Label id="lblUploadResult" Runat="server" Font-Size="Small" BorderStyle="Groove"></asp:Label>  
             
         </asp:Panel>
         <!--div style="font-family:Arial, Helvetica, sans-serif" class="w3-container">-->
@@ -35,6 +35,17 @@
                     <asp:TextBox ID="txtBoxMatterId" runat="server" ToolTip="Enter a valid Matter Code (6 Digits '-' 6 Digits)"></asp:TextBox>
                     <asp:TextBox ID="txtBoxNetDocsClient" runat="server" ToolTip="Enter a valid Net Documents Client Code (must be numeric)"></asp:TextBox>
                     <asp:TextBox ID="TxtBoxnetDocsMatter" runat="server" ToolTip="Enter a valid Net Documents Matter Code (must be Numeric)"></asp:TextBox>
+                    <asp:DropDownList runat="server" AutoPostBack ="true" ID="ddlRepository">
+                        <asp:ListItem Text="Demo Cabinet  (Birkett Long LLP)" />
+                        <asp:ListItem Text="BL Cabinet  (Birkett Long LLP)" />
+                    </asp:DropDownList>
+                    <asp:DropDownList runat="server" AutoPostBack ="true" ID="ddlBLUser">
+                        <asp:ListItem Text="Kieran$Caulfield" />
+                        <asp:ListItem Text="Neil$Mansell" />
+                        <asp:ListItem Text="Nick$Smith" />
+                        <asp:ListItem Text="Chris$Kirwin" />
+                        <asp:ListItem Text="Mark$Davidson" />
+                    </asp:DropDownList>
                  </ContentTemplate>
                 </asp:UpdatePanel>
                 
